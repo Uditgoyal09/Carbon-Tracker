@@ -375,7 +375,7 @@ const Goals = () => {
           </motion.div>
         </motion.div>
 
-        {/* Quick Links */}
+        {/* Quick Links – UPDATED BUTTON STYLE */}
         <motion.div
           className="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4"
           initial={{ opacity: 0 }}
@@ -384,18 +384,16 @@ const Goals = () => {
         >
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-base text-slate-600 hover:text-emerald-600 transition-colors flex items-center gap-2 group"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-6 py-3 text-base font-medium text-slate-700 shadow-sm hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200"
           >
-            <FaArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-            Back to Dashboard
+            ← Back to Dashboard
           </button>
-          <span className="hidden sm:block text-slate-300">|</span>
+
           <button
             onClick={() => navigate("/activity")}
-            className="text-base text-slate-600 hover:text-emerald-600 transition-colors flex items-center gap-2 group"
+            className="inline-flex items-center gap-2 rounded-full border border-slate-300 bg-white/80 px-6 py-3 text-base font-medium text-slate-700 shadow-sm hover:border-emerald-400 hover:text-emerald-700 hover:bg-emerald-50 transition-all duration-200"
           >
-            Log Activity
-            <FaArrowRight className="group-hover:translate-x-1 transition-transform" />
+            Log Activity →
           </button>
         </motion.div>
 

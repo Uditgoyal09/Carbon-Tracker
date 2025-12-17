@@ -352,25 +352,25 @@ function Home() {
             
             <div className="relative">
               <p className="text-sm md:text-base font-semibold uppercase tracking-wide text-emerald-100">
-                Today&apos;s Snapshot
+                Average Monthly Carbon Footprint (India)
               </p>
-              <p className="mt-4 text-4xl md:text-5xl font-bold">
-                482 <span className="text-2xl md:text-3xl">kg CO₂</span>
+              <p className="mt-4 text-2xl md:text-5xl font-bold">
+                ~450 <span className="text-2xl md:text-3xl">kg CO₂</span>
               </p>
-              <p className="text-lg text-emerald-200">per month</p>
+              <p className="text-lg text-emerald-200">/ month</p>
               <p className="mt-3 text-sm text-emerald-100/90">
-                Approximate value based on your recent activities.
+                Approximate values shown for awareness.
               </p>
             </div>
             <div className="mt-5 flex flex-wrap gap-2 text-sm text-emerald-50 relative">
               <span className="rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 font-medium">
-                Transport: 52%
+                🚗 Transport: 45%
               </span>
               <span className="rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 font-medium">
-                Home Energy: 31%
+                🍽️ Food: 30%
               </span>
               <span className="rounded-full bg-white/20 backdrop-blur-sm px-4 py-2 font-medium">
-                Others: 17%
+                ⚡ Electricity: 25%
               </span>
             </div>
           </div>

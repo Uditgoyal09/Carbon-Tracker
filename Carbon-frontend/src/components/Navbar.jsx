@@ -54,11 +54,15 @@ function Navbar({ user, setUser }) {
   const links = [
     { to: "/", label: "Home" },
     { to: "/dashboard", label: "Dashboard" },
-    { to: "/activity", label: "Log Activity" },
     { to: "/goals", label: "Goals" },
     { to: "/achievements", label: "Achievements" },
     { to: "/leaderboard", label: "Leaderboard" },
     { to: "/profile", label: "Profile" },
+  ];
+
+  const actionLinks = [
+    { to: "/activity", label: "Log Activity" },
+    { to: "/offset", label: "Carbon Offset" },
   ];
 
   return (
@@ -137,7 +141,102 @@ function Navbar({ user, setUser }) {
 
           {/* CENTER: Nav links */}
           <div className="w-3/5 flex justify-center gap-10">
-            {links.map((item) => (
+            {links.slice(0, 2).map((item) => (
+              <NavLink
+                key={item.to}
+                to={item.to}
+                className={({ isActive }) =>
+                  `
+                  whitespace-nowrap
+                  relative text-[15px] font-medium text-slate-700
+                  px-1 py-1
+                  hover:text-emerald-700 
+                  transition-all duration-200
+
+                  after:content-[''] after:absolute after:left-0 after:-bottom-1
+                  after:h-[2.5px] after:bg-gradient-to-r after:from-emerald-500 after:to-teal-500 
+                  after:w-0 after:rounded-full
+                  hover:after:w-full after:transition-all after:duration-300 after:ease-out
+
+                  ${isActive 
+                    ? "text-emerald-700 font-semibold after:w-full" 
+                    : ""
+                  }
+                `
+                }
+              >
+                {item.label}
+              </NavLink>
+            ))}
+
+            {/* Actions Dropdown */}
+            <div className="relative group">
+              <button
+                className="
+                  whitespace-nowrap
+                  relative text-[15px] font-medium text-slate-700
+                  px-1 py-1
+                  hover:text-emerald-700 
+                  transition-all duration-200
+                  flex items-center gap-1
+
+                  after:content-[''] after:absolute after:left-0 after:-bottom-1
+                  after:h-[2.5px] after:bg-gradient-to-r after:from-emerald-500 after:to-teal-500 
+                  after:w-0 after:rounded-full
+                  group-hover:after:w-full after:transition-all after:duration-300 after:ease-out
+                "
+              >
+                Actions
+                <svg 
+                  className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" 
+                  fill="none" 
+                  stroke="currentColor" 
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+
+              {/* Dropdown Menu */}
+              <div 
+                className="
+                  absolute top-full left-1/2 -translate-x-1/2 pt-3
+                  opacity-0 invisible
+                  group-hover:opacity-100 group-hover:visible
+                  transition-all duration-200
+                "
+              >
+                <div 
+                  className="
+                    bg-white/95 backdrop-blur-lg
+                    rounded-xl shadow-lg shadow-emerald-100/50
+                    border border-emerald-100
+                    py-2 min-w-[160px]
+                    overflow-hidden
+                  "
+                >
+                  {actionLinks.map((item) => (
+                    <NavLink
+                      key={item.to}
+                      to={item.to}
+                      className={({ isActive }) =>
+                        `
+                        block px-4 py-2.5
+                        text-[14px] font-medium text-slate-700
+                        hover:bg-emerald-50 hover:text-emerald-700
+                        transition-all duration-200
+                        ${isActive ? "text-emerald-700 bg-emerald-50/50" : ""}
+                      `
+                      }
+                    >
+                      {item.label}
+                    </NavLink>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {links.slice(2).map((item) => (
               <NavLink
                 key={item.to}
                 to={item.to}

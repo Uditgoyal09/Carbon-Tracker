@@ -77,16 +77,17 @@ function Dashboard() {
         // Fetch tips based on activity types or fallback to general tips
         if (sortedActivityTypes.length > 0) {
           // Determine how many tips to fetch per category based on activity count
+          // Total: 4 tips - 2 from highest, 1 from second, 1 from third
           let tipCountPerCategory;
           if (sortedActivityTypes.length === 1) {
-            // 1 activity type: 5 tips from that category
-            tipCountPerCategory = [5];
+            // 1 activity type: 4 tips from that category
+            tipCountPerCategory = [4];
           } else if (sortedActivityTypes.length === 2) {
-            // 2 activity types: 3 from highest, 2 from second
-            tipCountPerCategory = [3, 2];
+            // 2 activity types: 2 from highest, 2 from second
+            tipCountPerCategory = [2, 2];
           } else {
-            // 3+ activity types: 2 from highest, 2 from second, 1 from third
-            tipCountPerCategory = [2, 2, 1];
+            // 3+ activity types: 2 from highest, 1 from second, 1 from third
+            tipCountPerCategory = [2, 1, 1];
           }
 
           // Fetch tips for each category (up to 3 categories max)
@@ -550,20 +551,25 @@ function Dashboard() {
                   <p className="text-slate-500">Tips will appear based on your activities</p>
                 </div>
               ) : (
-                tips.slice(0, 4).map((tip, index) => (
-                  <motion.div 
-                    key={index} 
-                    className="p-4 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border-l-4 border-emerald-500 hover:shadow-md transition-shadow"
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.1 }}
-                  >
-                    <div className="flex items-start gap-3">
-                      <span className="text-xl">🌿</span>
-                      <p className="text-slate-700 leading-relaxed">{tip.message}</p>
-                    </div>
-                  </motion.div>
-                ))
+                <>
+                  {tips.slice(0, 4).map((tip, index) => (
+                    <motion.div 
+                      key={index} 
+                      className="p-5 rounded-2xl bg-gradient-to-r from-emerald-50 to-teal-50 border-l-4 border-emerald-500 hover:shadow-md transition-shadow"
+                      initial={{ opacity: 0, x: 20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: index * 0.1 }}
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">🌿</span>
+                        <p className="text-slate-700 text-base leading-relaxed">{tip.message}</p>
+                      </div>
+                    </motion.div>
+                  ))}
+                  <div className="pt-4 text-center">
+                    <p className="text-sm text-slate-400 italic">💡 Tips are personalized based on your highest carbon-emitting activities</p>
+                  </div>
+                </>
               )}
             </div>
           </motion.section>
@@ -622,6 +628,55 @@ function Dashboard() {
               <p className="text-sm text-slate-500">{stat.label}</p>
             </motion.div>
           ))}
+        </motion.section>
+
+        {/* ==================== CTA SECTION ==================== */}
+        <motion.section
+          className="relative rounded-[2rem] overflow-hidden shadow-2xl mt-12"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6 }}
+        >
+          {/* Background */}
+          <div className="absolute inset-0 bg-gradient-to-br from-emerald-600 via-emerald-700 to-teal-700" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(255,255,255,0.1),transparent_50%)]" />
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08),transparent_40%)]" />
+          
+          {/* Pattern */}
+          <div className="absolute inset-0 opacity-10">
+            <svg className="w-full h-full" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <pattern id="dashboard-cta-pattern" width="8" height="8" patternUnits="userSpaceOnUse">
+                  <circle cx="4" cy="4" r="1" fill="white"/>
+                </pattern>
+              </defs>
+              <rect width="100" height="100" fill="url(#dashboard-cta-pattern)"/>
+            </svg>
+          </div>
+
+          <div className="relative p-8 md:p-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
+            <div className="max-w-2xl">
+              <p className="text-sm font-bold uppercase tracking-wider text-emerald-200">
+                Take the next step
+              </p>
+              <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold mt-3 text-white">
+                You've seen where your emissions come from. The next step is to balance your impact.
+              </h2>
+              <p className="text-base md:text-lg text-emerald-100 mt-4 leading-relaxed">
+                Explore carbon offset options like tree planting, renewable energy adoption, 
+                and sustainable lifestyle changes to neutralize your carbon footprint.
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button
+                onClick={() => { window.scrollTo(0, 0); navigate("/offset"); }}
+                className="rounded-full bg-white px-8 py-3 text-base font-bold text-emerald-700 shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-200 whitespace-nowrap"
+              >
+                Offset Your Carbon Impact
+              </button>
+            </div>
+          </div>
         </motion.section>
 
       </div>

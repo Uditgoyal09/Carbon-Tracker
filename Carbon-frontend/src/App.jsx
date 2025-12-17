@@ -12,6 +12,7 @@ import Achievements from "./components/Achievements";
 import ProfilePage from "./components/ProfilePage";
 import Goals from "./pages/Goals";
 import Home from "./pages/Home";
+import Offset from "./pages/Offset";
 import Navbar from "./components/Navbar";
 import LearnMore from "./pages/LearnMore";
 import ForgotPassword from "./pages/ForgotPassword";
@@ -55,6 +56,7 @@ function App() {
         <Route path="/achievements" element={<PrivateRoute element={<Achievements />} />} />
         <Route path="/leaderboard" element={<PrivateRoute element={<Leaderboard />} />} />
         <Route path="/profile" element={<PrivateRoute element={<ProfilePage />} />} />
+        <Route path="/offset" element={<PrivateRoute element={<Offset />} />} />
         <Route path="/learn-more" element={<PrivateRoute element={<LearnMore />} />} />
       </Routes>
       <ToastContainer position="top-center" autoClose={2000} />
