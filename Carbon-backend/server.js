@@ -16,7 +16,10 @@ const offsetRoutes = require("./routes/offset.routes");
 const app = express();
 connectDB();
 
-app.use(cors());
+app.use(cors({
+  origin: "https://carbon-tracker-main.com",
+  credentials: true
+}));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use("/uploads", express.static("uploads")); // Serve profile pictures
