@@ -2,7 +2,7 @@
 title Carbon Project Runner
 
 echo Starting Backend...
-start cmd /k "cd Carbon-backend && nodemon server.js"
+start cmd /k "cd Carbon-backend && node server.js"
 
 timeout /t 3
 
