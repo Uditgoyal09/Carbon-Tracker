@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import earthImage from "../assets/earth_image.png";
 import childMaskImage from "../assets/child_mask.jpg";
-// Import portraits for the change-makers (add these images to your assets folder)
+
 import chetanMainiImg from "../assets/chetan maini.avif";
 import vibhaDhawanImg from "../assets/vibha dhawan.jpg";
 import sunitaNarainImg from "../assets/sunita narain.webp";
@@ -67,6 +67,31 @@ function Home() {
       icon: <FaUser className="text-slate-600 text-2xl" />,
       color: "bg-slate-50",
       path: "/profile",
+    },
+  ];
+
+  const impactStats = [
+    { value: "15+", label: "Eco Habits to Track", icon: <FaLeaf className="text-emerald-600" /> },
+    { value: "6", label: "Smart Dashboards", icon: <FaChartLine className="text-cyan-600" /> },
+    { value: "100%", label: "Goal Focused", icon: <FaBullseye className="text-violet-600" /> },
+    { value: "24x7", label: "Progress Visibility", icon: <FaTrophy className="text-amber-600" /> },
+  ];
+
+  const valuePillars = [
+    {
+      title: "Live Tracking",
+      text: "Log daily actions and instantly see how each decision changes your footprint.",
+      accent: "from-emerald-500 to-teal-600",
+    },
+    {
+      title: "Actionable Goals",
+      text: "Set weekly targets, measure consistency, and build sustainable routines.",
+      accent: "from-cyan-500 to-blue-600",
+    },
+    {
+      title: "Community Motivation",
+      text: "Stay accountable through achievements, rankings, and healthy competition.",
+      accent: "from-amber-500 to-orange-500",
     },
   ];
 
@@ -301,6 +326,52 @@ function Home() {
                 Learn More
               </button>
             </motion.div>
+          </div>
+        </motion.section>
+
+        {/* Modern Value Strip */}
+        <motion.section
+          className="space-y-6"
+          initial={{ opacity: 0, y: 24 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.2 }}
+          transition={{ duration: 0.6 }}
+        >
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            {impactStats.map((item, index) => (
+              <motion.div
+                key={item.label}
+                className="rounded-2xl border border-white/70 bg-white/80 backdrop-blur-md p-5 shadow-lg shadow-emerald-100/30"
+                initial={{ opacity: 0, y: 16 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.08 }}
+                whileHover={{ y: -4, scale: 1.01 }}
+              >
+                <div className="w-10 h-10 rounded-xl bg-slate-50 flex items-center justify-center shadow-sm mb-3">
+                  {item.icon}
+                </div>
+                <p className="text-2xl md:text-3xl font-bold text-slate-900">{item.value}</p>
+                <p className="text-sm text-slate-500 mt-1">{item.label}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-4">
+            {valuePillars.map((pillar, index) => (
+              <motion.div
+                key={pillar.title}
+                className="rounded-2xl bg-white/80 backdrop-blur-sm border border-slate-100 p-5 shadow-lg shadow-slate-100/50"
+                initial={{ opacity: 0, y: 14 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1 }}
+              >
+                <span className={`inline-block h-1.5 w-16 rounded-full bg-gradient-to-r ${pillar.accent} mb-4`} />
+                <h3 className="text-lg font-bold text-slate-900">{pillar.title}</h3>
+                <p className="text-sm text-slate-600 mt-2 leading-relaxed">{pillar.text}</p>
+              </motion.div>
+            ))}
           </div>
         </motion.section>
 

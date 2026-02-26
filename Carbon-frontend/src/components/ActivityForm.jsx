@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 import {
   FaLeaf,
   FaCar,
@@ -31,8 +32,13 @@ const ActivityForm = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login again");
+        navigate("/login");
+        return;
+      }
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/activities`,
+        `${API_BASE_URL}/api/activities`,
         { type, data },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -40,7 +46,7 @@ const ActivityForm = () => {
       setType("");
       setData({});
     } catch (err) {
-      toast.error("Error logging activity");
+      toast.error(err.response?.data?.message || "Error logging activity");
     } finally {
       setLoading(false);
     }

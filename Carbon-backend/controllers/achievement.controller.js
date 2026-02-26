@@ -54,15 +54,10 @@ exports.getAchievements = async (req, res) => {
 
     // Fetch permanent achievements from DB
     const permanentAchievements = await Achievement.find({ user: userId });
-
-    // Compute dynamic "Going Green" badge
     const dynamicAchievements = [];
-    
     const { startOfWeek, endOfWeek } = getCurrentWeekRange();
     const user = await User.findById(userId);
     
-    // "Going Green" badge - dynamic, computed on the fly
-    // Only consider activities logged AFTER the weekly goal was set AND within current week
     if (user.weeklyGoal != null && user.weeklyGoalSetAt != null) {
       // Determine the effective start date: later of (start of week, goal set date)
       const effectiveStartDate = new Date(Math.max(

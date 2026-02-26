@@ -2,7 +2,6 @@
 const Activity = require("../models/Activity");
 const User = require("../models/User");
 
-// Helper: Get start of current week (Sunday-based for consistency)
 const getStartOfWeek = () => {
   const startOfWeek = new Date();
   startOfWeek.setDate(startOfWeek.getDate() - startOfWeek.getDay());
@@ -10,7 +9,6 @@ const getStartOfWeek = () => {
   return startOfWeek;
 };
 
-// Helper: Get end of current week
 const getEndOfWeek = () => {
   const endOfWeek = new Date();
   endOfWeek.setDate(endOfWeek.getDate() + (6 - endOfWeek.getDay()));
@@ -18,8 +16,6 @@ const getEndOfWeek = () => {
   return endOfWeek;
 };
 
-// Helper: Get dynamic eco title based on rank and weekly performance
-// Returns a title for leaderboard display (not stored in DB)
 const getEcoTitle = (rank, weeklyStatus, activityCount) => {
   if (rank === 1) {
     return "Eco Champion";
@@ -47,7 +43,7 @@ const getWeeklySummary = async (req, res) => {
 
     const total = activities.reduce((sum, act) => sum + act.carbonFootprint, 0);
 
-    const user = await User.findById(userId); // ✅ Fetch latest goal
+    const user = await User.findById(userId); // Fetch latest goal
 
     const goal = user.weeklyGoal || 100; // Default goal if not set
     const status = total <= goal ? "under" : "over";

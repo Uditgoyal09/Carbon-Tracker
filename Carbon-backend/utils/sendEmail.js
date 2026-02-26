@@ -9,13 +9,7 @@ const transporter = nodemailer.createTransport({
   }
 });
 
-/**
- * Send an email using Nodemailer
- * @param {string} to - Recipient email address
- * @param {string} subject - Email subject
- * @param {string} text - Email body (plain text)
- * @returns {Promise} - Resolves with info on success, throws on error
- */
+
 const sendEmail = async (to, subject, text) => {
   try {
     const mailOptions = {

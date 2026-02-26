@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 import {
   FaLeaf,
   FaTree,
@@ -17,8 +18,6 @@ import {
   FaDownload,
 } from "react-icons/fa";
 
-const API_URL = import.meta.env.VITE_API_URL;
-
 function Offset() {
   const navigate = useNavigate();
   const [offsetData, setOffsetData] = useState(null);
@@ -31,7 +30,7 @@ function Offset() {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${API_URL}/api/offset/summary`, {
+        const res = await axios.get(`${API_BASE_URL}/api/offset/summary`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setOffsetData(res.data);
@@ -54,7 +53,7 @@ function Offset() {
       setIsDownloading(true);
       const token = localStorage.getItem("token");
       
-      const response = await fetch(`${API_URL}/api/offset/report`, {
+      const response = await fetch(`${API_BASE_URL}/api/offset/report`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,

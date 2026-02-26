@@ -14,30 +14,30 @@ const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
-// Step 1: Send OTP to email
-// Step 1: Send OTP to email
+
+// send otp
 exports.sendOtp = async (req, res) => {
   const { email } = req.body;
   try {
     if (!email) {
       return res.status(400).json({ message: "Email is required" });
     }
-
-    // Generate OTP and set expiry (10 minutes)
     const otp = generateOtp();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
-
-    // Find existing user or create new one with email only
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); //10 min
     let user = await User.findOne({ email });
     if (user) {
       user.otp = otp;
       user.otpExpiry = otpExpiry;
+      user.lastOtp = otp;
+      user.lastOtpExpiry = otpExpiry;
       await user.save();
     } else {
       user = new User({
         email,
         otp,
         otpExpiry,
+        lastOtp: otp,
+        lastOtpExpiry: otpExpiry,
         isVerified: false
       });
       await user.save();
@@ -49,11 +49,10 @@ exports.sendOtp = async (req, res) => {
       "Your Carbon Tracker OTP",
       `Your OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
     );
-
     res.json({ message: "OTP sent to email" });
 
   } catch (err) {
-    // 🔴 ADD THIS LINE (VERY IMPORTANT)
+
     console.error("SEND OTP ERROR:", err);
 
     res.status(500).json({
@@ -63,11 +62,11 @@ exports.sendOtp = async (req, res) => {
   }
 };
 
-// Step 2: Verify OTP
+
 exports.verifyOtp = async (req, res) => {
   const { email, otp } = req.body;
   try {
-    const user = await User.findOne({ email });
+    const user = await User.findOne({ email }); //find user form the database
     if (!user) return res.status(400).json({ message: "User not found" });
 
     // Check if already verified
@@ -97,7 +96,6 @@ exports.verifyOtp = async (req, res) => {
   }
 };
 
-// Step 3: Register (after OTP verification)
 exports.register = async (req, res) => {
   const { name, email, password } = req.body;
   try {
@@ -122,8 +120,6 @@ exports.register = async (req, res) => {
         message: "Password must be at least 8 characters long and contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character"
       });
     }
-
-    // Hash password and save user details
     const hashedPassword = await bcrypt.hash(password, 10);
     user.name = name;
     user.password = hashedPassword;
@@ -135,7 +131,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// Step 4: Login
+
 exports.login = async (req, res) => {
   const { email, password } = req.body;
   try {
@@ -150,6 +146,11 @@ exports.login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
+    if (!user.hasLoggedIn) {
+      user.hasLoggedIn = true;
+      await user.save();
+    }
+
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: "2h" });
 
     res.json({ token, user: { id: user._id, name: user.name, email: user.email } });
@@ -158,7 +159,7 @@ exports.login = async (req, res) => {
   }
 };
 
-// Step 5: Forgot Password - Send OTP
+// Forgot Password - Send OTP
 exports.forgotPasswordOtp = async (req, res) => {
   const { email } = req.body;
   try {
@@ -177,6 +178,8 @@ exports.forgotPasswordOtp = async (req, res) => {
 
     user.otp = otp;
     user.otpExpiry = otpExpiry;
+    user.lastOtp = otp;
+    user.lastOtpExpiry = otpExpiry;
     await user.save();
 
     // Send OTP via email
@@ -193,7 +196,7 @@ exports.forgotPasswordOtp = async (req, res) => {
   }
 };
 
-// Step 6: Verify Forgot Password OTP
+//  Verify Forgot Password OTP
 exports.verifyForgotOtp = async (req, res) => {
   const { email, otp } = req.body;
   try {
@@ -211,16 +214,13 @@ exports.verifyForgotOtp = async (req, res) => {
     if (user.otpExpiry < new Date()) {
       return res.status(400).json({ message: "OTP has expired" });
     }
-
-    // Mark OTP as verified by clearing it (user must reset password immediately)
-    // Keep otp fields for resetPassword to clear after password update
     res.json({ message: "OTP verified successfully" });
   } catch (err) {
     res.status(500).json({ message: "OTP verification error", error: err.message });
   }
 };
 
-// Step 7: Reset Password (after OTP verification)
+// Reset Password (after OTP verification)
 exports.resetPassword = async (req, res) => {
   const { email, newPassword } = req.body;
   try {

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 import {
   FaLeaf,
   FaTrophy,
@@ -30,17 +31,30 @@ function Leaderboard() {
     const fetchLeaderboard = async () => {
       try {
         const token = localStorage.getItem("token");
+        if (!token) {
+          setUsers([]);
+          return;
+        }
         const res = await axios.get(
-          `${import.meta.env.VITE_API_URL}/api/activities/leaderboard`,
+          `${API_BASE_URL}/api/activities/leaderboard`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
             },
           }
         );
-        setUsers(res.data);
+        const leaderboardData = Array.isArray(res.data)
+          ? res.data
+          : Array.isArray(res.data?.leaderboard)
+            ? res.data.leaderboard
+            : [];
+        const sortedLeaderboard = [...leaderboardData].sort(
+          (a, b) => (Number(a?.totalCO2) || 0) - (Number(b?.totalCO2) || 0)
+        );
+        setUsers(sortedLeaderboard);
       } catch (err) {
         console.error("Error loading leaderboard", err);
+        setUsers([]);
       } finally {
         setLoading(false);
       }
@@ -94,17 +108,16 @@ function Leaderboard() {
 
   // Calculate stats
   const totalParticipants = users.length;
-  const topPerformerCO2 = users.length > 0 ? users[0]?.totalCO2 : 0;
+  const topPerformerCO2 = users.length > 0 ? Number(users[0]?.totalCO2 || 0) : 0;
   const averageCO2 =
     users.length > 0
-      ? users.reduce((acc, u) => acc + (u.totalCO2 || 0), 0) / users.length
+      ? users.reduce((acc, u) => acc + Number(u.totalCO2 || 0), 0) / users.length
       : 0;
 
   return (
     <div className="min-h-screen relative overflow-hidden">
       {/* ==================== BACKGROUND (Same as Achievements page) ==================== */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30" />
 
         {/* Floating Circles */}
@@ -212,10 +225,10 @@ function Leaderboard() {
                 </div>
                 <div className="text-left">
                   <p className="text-2xl font-bold text-slate-800">
-                    {topPerformerCO2?.toFixed(1) || 0}
+                    {topPerformerCO2.toLocaleString("en-IN", { maximumFractionDigits: 1 })}
                     <span className="text-sm font-medium text-slate-500 ml-0.5">kg</span>
                   </p>
-                  <p className="text-xs text-slate-500">Top Score</p>
+                  <p className="text-xs text-slate-500">Best (Lowest CO2)</p>
                 </div>
               </div>
               <div className="h-8 w-px bg-slate-200 hidden sm:block" />
@@ -225,10 +238,10 @@ function Leaderboard() {
                 </div>
                 <div className="text-left">
                   <p className="text-2xl font-bold text-slate-800">
-                    {averageCO2.toFixed(1)}
+                    {averageCO2.toLocaleString("en-IN", { maximumFractionDigits: 1 })}
                     <span className="text-sm font-medium text-slate-500 ml-0.5">kg</span>
                   </p>
-                  <p className="text-xs text-slate-500">Average</p>
+                  <p className="text-xs text-slate-500">Avg CO2 Emitted</p>
                 </div>
               </div>
             </motion.div>
@@ -250,7 +263,7 @@ function Leaderboard() {
               </div>
               <div>
                 <h2 className="text-xl font-bold text-slate-800">Rankings</h2>
-                <p className="text-sm text-slate-500">Top performers by CO₂ impact</p>
+                <p className="text-sm text-slate-500">Lower CO2 emitted means higher rank</p>
               </div>
             </div>
             {users.length > 0 && (
@@ -432,7 +445,10 @@ function Leaderboard() {
                           }`}
                         >
                           <FaLeaf className="text-xs opacity-70" />
-                          {user.totalCO2?.toFixed(2) || "0.00"} kg
+                          {(Number(user.totalCO2 || 0)).toLocaleString("en-IN", {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2,
+                          })} kg
                         </span>
                       </td>
                     </motion.tr>

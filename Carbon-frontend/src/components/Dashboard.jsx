@@ -23,8 +23,12 @@ import {
   FaExclamationCircle,
 } from "react-icons/fa";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 
-const API_URL = import.meta.env.VITE_API_URL;
+const toNumber = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : 0;
+};
 
 function Dashboard() {
   const navigate = useNavigate();
@@ -41,24 +45,29 @@ function Dashboard() {
         const token = localStorage.getItem("token");
 
         const [activitiesRes, summaryRes] = await Promise.all([
-          axios.get(`${API_URL}/api/activities/my`, {
+          axios.get(`${API_BASE_URL}/api/activities/my`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get(`${API_URL}/api/activities/weekly-summary`, {
+          axios.get(`${API_BASE_URL}/api/activities/weekly-summary`, {
             headers: { Authorization: `Bearer ${token}` },
           })
         ]);
 
-        const fetchedActivities = activitiesRes.data;
+        const fetchedActivities = Array.isArray(activitiesRes.data)
+          ? activitiesRes.data
+          : Array.isArray(activitiesRes.data?.activities)
+            ? activitiesRes.data.activities
+            : [];
         setActivities(fetchedActivities);
         setWeeklySummary({
           ...summaryRes.data,
-          goal: goal ?? summaryRes.data.goal,
+          total: toNumber(summaryRes.data?.total),
+          goal: toNumber(goal ?? summaryRes.data?.goal),
         });
 
         // Calculate total emissions per activity type
         const emissionsByActivityType = fetchedActivities.reduce((acc, act) => {
-          acc[act.type] = (acc[act.type] || 0) + act.carbonFootprint;
+          acc[act.type] = (acc[act.type] || 0) + toNumber(act.carbonFootprint);
           return acc;
         }, {});
 
@@ -94,9 +103,9 @@ function Dashboard() {
           const categoriesToFetch = sortedActivityTypes.slice(0, tipCountPerCategory.length);
           const tipPromises = categoriesToFetch.map((activityType) => {
             const category = categoryMap[activityType] || activityType;
-            return axios.get(`${API_URL}/api/tips?category=${category}`, {
+            return axios.get(`${API_BASE_URL}/api/tips?category=${category}`, {
               headers: { Authorization: `Bearer ${token}` },
-            }).then(res => res.data).catch(() => []);
+            }).then((res) => (Array.isArray(res.data) ? res.data : [])).catch(() => []);
           });
 
           const tipsResults = await Promise.all(tipPromises);
@@ -109,13 +118,15 @@ function Dashboard() {
           setTips(orderedTips);
         } else {
           // Fallback: no activities, fetch general tips
-          const generalTipsRes = await axios.get(`${API_URL}/api/tips`, {
+          const generalTipsRes = await axios.get(`${API_BASE_URL}/api/tips`, {
             headers: { Authorization: `Bearer ${token}` },
           });
-          setTips(generalTipsRes.data);
+          setTips(Array.isArray(generalTipsRes.data) ? generalTipsRes.data : []);
         }
       } catch (err) {
         console.error("Failed to load dashboard data", err);
+        setActivities([]);
+        setTips([]);
       } finally {
         setIsLoading(false);
       }
@@ -125,7 +136,7 @@ function Dashboard() {
   }, [goal]);
 
   const emissionsByType = activities.reduce((acc, act) => {
-    acc[act.type] = (acc[act.type] || 0) + act.carbonFootprint;
+    acc[act.type] = (acc[act.type] || 0) + toNumber(act.carbonFootprint);
     return acc;
   }, {});
 
@@ -136,7 +147,7 @@ function Dashboard() {
 
   const chartDataByDate = activities.map(act => ({
     date: new Date(act.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }),
-    carbon: parseFloat(act.carbonFootprint.toFixed(2))
+    carbon: parseFloat(toNumber(act.carbonFootprint).toFixed(2))
   })).reverse();
 
   // Custom tooltip for charts
@@ -172,9 +183,7 @@ function Dashboard() {
 
   return (
     <div className="min-h-screen relative overflow-hidden">
-      {/* ==================== BACKGROUND (Same as Home Page) ==================== */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30" />
         
         {/* Floating Circles */}
@@ -593,7 +602,7 @@ function Dashboard() {
             },
             { 
               label: "Total CO₂", 
-              value: `${activities.reduce((sum, a) => sum + a.carbonFootprint, 0).toFixed(1)} kg`, 
+              value: `${activities.reduce((sum, a) => sum + toNumber(a.carbonFootprint), 0).toFixed(1)} kg`, 
               icon: "🌍", 
               color: "from-emerald-500 to-teal-600",
               bgColor: "bg-emerald-50"
@@ -601,7 +610,7 @@ function Dashboard() {
             { 
               label: "Avg per Activity", 
               value: activities.length > 0 
-                ? `${(activities.reduce((sum, a) => sum + a.carbonFootprint, 0) / activities.length).toFixed(2)} kg`
+                ? `${(activities.reduce((sum, a) => sum + toNumber(a.carbonFootprint), 0) / activities.length).toFixed(2)} kg`
                 : "0 kg", 
               icon: "📈", 
               color: "from-amber-500 to-orange-600",

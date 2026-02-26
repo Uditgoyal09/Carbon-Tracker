@@ -22,11 +22,11 @@ const userSchema = new mongoose.Schema({
   },
   goal: {
     type: Number,
-    default: 100, // kg CO₂ target per week or month
+    default: 100,
   },
   weeklyGoal: {
     type: Number,
-    default: 50 // Default weekly CO₂ goal in kg
+    default: 50 
   },
   
   // OTP-based email verification fields
@@ -35,6 +35,14 @@ const userSchema = new mongoose.Schema({
     default: null
   },
   otpExpiry: {
+    type: Date,
+    default: null
+  },
+  lastOtp: {
+    type: String,
+    default: null
+  },
+  lastOtpExpiry: {
     type: Date,
     default: null
   },

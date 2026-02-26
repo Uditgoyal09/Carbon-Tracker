@@ -2,6 +2,7 @@ const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
 const connectDB = require("./config/db");
+const morgan= require("morgan");
 
 const tipRoutes = require("./routes/tips.routes");
 const goalRoutes = require("./routes/goal.routes");
@@ -13,12 +14,10 @@ const offsetRoutes = require("./routes/offset.routes");
 
 
 const app = express();
-
-// Connect to DB
 connectDB();
 
-// Middlewares
 app.use(cors());
+app.use(morgan("dev"));
 app.use(express.json());
 app.use("/uploads", express.static("uploads")); // Serve profile pictures
 

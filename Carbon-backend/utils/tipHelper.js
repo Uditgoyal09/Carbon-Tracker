@@ -1,22 +1,16 @@
 const Tip = require("../models/Tip");
 
-// Helper: Get tips distribution based on number of categories
+
 const getTipsDistribution = (categoryCount) => {
   if (categoryCount === 1) {
-    return [5]; // 5 tips for the only category
+    return [5]; 
   } else if (categoryCount === 2) {
-    return [3, 2]; // 3 for highest, 2 for second
+    return [3, 2];
   } else {
-    return [2, 2, 1]; // 2, 2, 1 for top 3 categories
+    return [2, 2, 1]; 
   }
 };
 
-/**
- * Fetch personalized tips based on activity categories sorted by emissions
- * @param {Array} sortedCategories - Categories sorted by totalCO2 descending
- *   Each item: { category: string, totalCO2: number, count: number }
- * @returns {Promise<Array>} - Array of 5 personalized tips
- */
 const getPersonalizedTips = async (sortedCategories) => {
   const personalizedTips = [];
   const categoryCount = sortedCategories.length;
@@ -24,7 +18,6 @@ const getPersonalizedTips = async (sortedCategories) => {
   if (categoryCount > 0) {
     const distribution = getTipsDistribution(categoryCount);
 
-    // Fetch tips for each category in emission priority order
     for (let i = 0; i < Math.min(distribution.length, categoryCount); i++) {
       const category = sortedCategories[i].category;
       const tipCount = distribution[i];

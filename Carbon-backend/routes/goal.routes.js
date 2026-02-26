@@ -3,7 +3,7 @@ const router = express.Router();
 const Goal = require("../models/Goal");
 const verifyToken = require("../middleware/authMiddleware");
 
-// Set or update goal
+
 router.post("/", verifyToken, async (req, res) => {
   const { weeklyGoal } = req.body;
   try {

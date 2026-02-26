@@ -5,6 +5,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { useGoal } from "../components/GoalContext";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 import {
   FaLeaf,
   FaBullseye,
@@ -33,8 +34,13 @@ const Goals = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("token");
+      if (!token) {
+        toast.error("Please login again");
+        navigate("/login");
+        return;
+      }
       const res = await axios.post(
-        `${import.meta.env.VITE_API_URL}/api/goals`,
+        `${API_BASE_URL}/api/goals`,
         { weeklyGoal: parseFloat(goalInput) },
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -42,7 +48,7 @@ const Goals = () => {
       fetchGoal();
       setGoalInput("");
     } catch (err) {
-      toast.error("Error setting goal");
+      toast.error(err.response?.data?.message || "Error setting goal");
     } finally {
       setLoading(false);
     }
@@ -62,9 +68,7 @@ const Goals = () => {
 
   return (
     <div className="min-h-screen relative overflow-hidden text-base md:text-lg">
-      {/* ==================== BACKGROUND (Same as Home/Dashboard/Activity) ==================== */}
       <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-        {/* Gradient Background */}
         <div className="absolute inset-0 bg-gradient-to-br from-emerald-50/50 via-white to-teal-50/30" />
 
         {/* Floating Circles */}
@@ -72,8 +76,6 @@ const Goals = () => {
         <div className="absolute top-1/3 right-0 w-96 h-96 bg-teal-200/20 rounded-full blur-3xl" />
         <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-green-200/15 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-emerald-300/10 rounded-full blur-3xl animate-pulse" />
-
-        {/* Subtle Grid Pattern */}
         <div
           className="absolute inset-0 opacity-[0.015]"
           style={{

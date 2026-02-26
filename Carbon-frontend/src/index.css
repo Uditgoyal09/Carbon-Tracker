@@ -1,3 +1,45 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply antialiased text-slate-800;
+  }
+}
+
+@layer components {
+  .ui-modern :where(button, a, input, select, textarea) {
+    transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease, background-color 220ms ease, color 220ms ease;
+  }
+
+  .ui-modern :where(button, a):hover {
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.12);
+  }
+
+  .ui-modern :where(button):hover {
+    transform: translateY(-1px);
+  }
+
+  .ui-modern :where(input, select, textarea):hover {
+    box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
+    border-color: rgba(16, 185, 129, 0.35);
+  }
+
+  .ui-modern :where(input, select, textarea):focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.14), 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .ui-modern :where(.shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl) {
+    transition: box-shadow 260ms ease, transform 260ms ease;
+  }
+
+  .ui-modern :where(div, section, article)[class*="shadow"] {
+    border: 1px solid rgba(148, 163, 184, 0.24);
+  }
+
+  .ui-modern :where(.shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl):hover {
+    box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
+    transform: translateY(-2px);
+  }
+}

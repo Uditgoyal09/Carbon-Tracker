@@ -24,8 +24,6 @@ exports.getMonthlyOffset = async (req, res) => {
     // Calculate total CO2 in kg
     const totalCO2 = activities.reduce((sum, activity) => sum + activity.carbonFootprint, 0);
 
-    // Calculate trees required for MONTHLY offset (1 tree absorbs ~21kg CO2/year)
-    // Monthly trees = monthlyCO2 / 21
     const monthlyTreesRequired = Math.ceil(totalCO2 / 21);
 
     // Yearly projection (for planning purposes)

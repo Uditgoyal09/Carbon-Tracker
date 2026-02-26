@@ -4,6 +4,7 @@ import axios from "axios";
 import { motion } from "framer-motion";
 import { FaEnvelope, FaKey } from "react-icons/fa";
 import { toast } from "react-toastify";
+import API_BASE_URL from "../../config/api";
 
 function VerifyOtp() {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ function VerifyOtp() {
     setForm({ ...form, [name]: value });
   };
 
+  //verify foprget pass email send otp
   const handleVerify = async (e) => {
     e.preventDefault();
     if (form.otp.length !== 6) {
@@ -28,8 +30,7 @@ function VerifyOtp() {
       return;
     }
     try {
-      await axios.post(`${import.meta.env.VITE_API_URL}/api/auth/verify-forgot-otp`, {
-
+      await axios.post(`${API_BASE_URL}/api/auth/verify-forgot-otp`, {
         email: form.email,
         otp: form.otp,
       });

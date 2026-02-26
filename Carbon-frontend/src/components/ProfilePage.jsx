@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 import {
   FaLeaf,
   FaUser,
@@ -36,27 +37,34 @@ function ProfilePage() {
   const [saving, setSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const token = localStorage.getItem("token");
-  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         setLoading(true);
-        const res = await axios.get(`${API_URL}/api/users/me`, {
+        if (!token) {
+          setProfile({ name: "", email: "" });
+          setLoading(false);
+          return;
+        }
+        const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setProfile(res.data);
+        setProfile({
+          name: res.data?.name || "",
+          email: res.data?.email || "",
+        });
       } catch (err) {
-        toast.error("Failed to load profile");
+        toast.error(err.response?.data?.message || "Failed to load profile");
       } finally {
         setLoading(false);
       }
     };
 
     fetchProfile();
-  }, [token, API_URL]);
+  }, [token]);
 
   const handleChange = (e) => {
     setProfile({ ...profile, [e.target.name]: e.target.value });
@@ -66,9 +74,12 @@ function ProfilePage() {
   const handleUpdate = async () => {
     try {
       setSaving(true);
-      const res = await axios.put(
-        `${API_URL}/api/users/me`,
-        {
+      if (!token) {
+        toast.error("Please login again");
+        navigate("/login");
+        return;
+      }
+      const res = await axios.put(`${API_BASE_URL}/api/users/me`,{
           name: profile.name,
           email: profile.email,
           password,
@@ -77,12 +88,15 @@ function ProfilePage() {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setProfile(res.data);
+      setProfile({
+        name: res.data?.name || "",
+        email: res.data?.email || "",
+      });
       setPassword("");
       setIsEditing(false);
       toast.success("Profile updated successfully");
     } catch (err) {
-      toast.error("Error updating profile");
+      toast.error(err.response?.data?.message || "Error updating profile");
     } finally {
       setSaving(false);
     }

@@ -18,11 +18,7 @@ router.get("/me", verifyToken, async (req, res) => {
 // PUT /api/users/me - Update name/email/password
 router.put("/me", verifyToken, async (req, res) => {
   try {
-    const updated = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: req.body },
-      { new: true }
-    ).select("-password");
+    const updated = await User.findByIdAndUpdate(req.user.id,{ $set: req.body },{ new: true }).select("-password"); //soprt
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: "Failed to update profile" });
@@ -57,27 +53,22 @@ router.get("/achievements", verifyToken, async (req, res) => {
 
     const totalCO2 = activities.reduce((sum, act) => sum + act.kg, 0);
 
-    // 🎉 First Login Badge
+
     if (!user.hasLoggedIn) {
       achievements.push("🎉 First Login");
       user.hasLoggedIn = true;
       await user.save();
     }
 
-    // 🌱 Eco Starter Badge
     if (activities.length >= 1) {
       achievements.push("🌱 Eco Starter");
     }
-
-    // 🥇 Under Goal Champion Badge
     if (user.goal && totalCO2 < user.goal) {
       achievements.push("🥇 Under Goal Champion");
     }
 
     // ♻️ Weekly Logger Badge
-    const recentActivities = activities.filter(
-      (act) => new Date(act.createdAt) >= oneWeekAgo
-    );
+    const recentActivities = activities.filter((act) => new Date(act.createdAt) >= oneWeekAgo);
     if (recentActivities.length > 0) {
       achievements.push("♻️ Weekly Logger");
     }

@@ -1,49 +1,40 @@
-// src/components/Navbar.jsx
-import { NavLink, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { NavLink, useLocation, useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
 import logo from "../assets/Carbon Tracker.png";
 
 function Navbar({ user, setUser }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [isVisible, setIsVisible] = useState(true);
-  const [lastScrollY, setLastScrollY] = useState(0);
   const [isAtTop, setIsAtTop] = useState(true);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [actionsOpen, setActionsOpen] = useState(false);
+  const lastScrollYRef = useRef(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      
-      // Check if at top of page
+      const previousScrollY = lastScrollYRef.current;
+
       setIsAtTop(currentScrollY < 10);
-      
-      // Determine scroll direction
-      if (currentScrollY > lastScrollY && currentScrollY > 80) {
-        // Scrolling DOWN & past threshold - HIDE navbar
+
+      if (currentScrollY > previousScrollY && currentScrollY > 90) {
         setIsVisible(false);
-      } else if (currentScrollY < lastScrollY) {
-        // Scrolling UP - SHOW navbar
+      } else if (currentScrollY < previousScrollY) {
         setIsVisible(true);
       }
-      
-      setLastScrollY(currentScrollY);
+
+      lastScrollYRef.current = currentScrollY;
     };
 
-    // Add scroll event listener with passive for better performance
     window.addEventListener("scroll", handleScroll, { passive: true });
-
-    // Cleanup on unmount
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [lastScrollY]);
-
-  // Ensure navbar is visible when at top
-  useEffect(() => {
-    if (window.scrollY < 10) {
-      setIsVisible(true);
-      setIsAtTop(true);
-    }
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    setMobileOpen(false);
+    setActionsOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -65,251 +56,156 @@ function Navbar({ user, setUser }) {
     { to: "/offset", label: "Carbon Offset" },
   ];
 
+  const desktopLinkClass = ({ isActive }) =>
+    `relative text-[15px] font-medium px-3 py-1.5 rounded-xl transition-all duration-200 ${
+      isActive
+        ? "text-emerald-700 bg-emerald-50 border border-emerald-100 shadow-sm"
+        : "text-slate-700 hover:text-emerald-700 hover:bg-emerald-50/70"
+    }`;
+
+  const mobileLinkClass = ({ isActive }) =>
+    `block w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+      isActive
+        ? "bg-emerald-50 text-emerald-700 border border-emerald-100"
+        : "text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-700"
+    }`;
+
   return (
     <>
-      {/* Google Fonts Import for Poppins */}
-      <style>
-        {`
-          @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
-          .font-poppins {
-            font-family: 'Poppins', sans-serif;
-          }
-        `}
-      </style>
-      
-      <nav 
-        className={`
-          font-poppins
-          fixed top-0 left-0 right-0 z-50
-          transition-all duration-1000 ease-in-out
-          ${isVisible 
-            ? 'translate-y-0 opacity-100' 
-            : '-translate-y-full opacity-0'
-          }
-          ${!isAtTop && isVisible 
-            ? 'shadow-md shadow-emerald-100/50' 
-            : 'shadow-none'
-          }
-        `}
+      <nav
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
+          isVisible ? "translate-y-0" : "-translate-y-full"
+        }`}
         onMouseEnter={() => setIsVisible(true)}
       >
-        {/* Background with blur effect */}
-        <div 
-          className={`
-            absolute inset-0 
-            transition-all duration-300
-            ${isAtTop 
-              ? 'bg-transparent' 
-              : 'bg-gradient-to-r from-white/95 via-emerald-50/90 to-white/95 backdrop-blur-lg'
-            }
-          `}
-        />
-        
-        {/* Subtle bottom border when scrolled */}
-        <div 
-          className={`
-            absolute bottom-0 left-0 right-0 h-[1px]
-            bg-gradient-to-r from-transparent via-emerald-200/50 to-transparent
-            transition-opacity duration-300
-            ${isAtTop ? 'opacity-0' : 'opacity-100'}
-          `}
-        />
-        
         <div
-          className="
-            relative
-            max-w-7xl mx-auto
-            px-8 lg:px-12
-            py-6 md:py-7
-            flex items-center
-          "
-        >
-          {/* LEFT: Logo area */}
-          <div className="w-1/5 flex justify-start">
-            <img
-              src={logo}
-              alt="Carbon Tracker logo"
+          className={`absolute inset-0 transition-all duration-300 ${
+            isAtTop
+              ? "bg-white/75 backdrop-blur-md"
+              : "bg-white/92 backdrop-blur-xl shadow-md shadow-emerald-100/40"
+          }`}
+        />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-200/60 to-transparent" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+          <div className="flex items-center justify-between gap-4">
+            <button
               onClick={() => navigate("/")}
-              className="
-                h-[137px] w-[137px] md:h-[117px] md:w-[117px] 
-                rounded-full object-contain cursor-pointer 
-                transition-transform duration-300 
-                hover:scale-105 hover:rotate-3
-              "
-            />
+              className="shrink-0 rounded-2xl p-1 hover:bg-emerald-50 transition-colors"
+              aria-label="Go to home"
+            >
+              <img
+                src={logo}
+                alt="Carbon Tracker logo"
+                className="h-12 w-12 sm:h-14 sm:w-14 rounded-full object-contain"
+              />
+            </button>
+
+            <div className="hidden md:flex items-center gap-5 lg:gap-6">
+              {links.slice(0, 2).map((item) => (
+                <NavLink key={item.to} to={item.to} className={desktopLinkClass}>
+                  {item.label}
+                </NavLink>
+              ))}
+
+              <div className="relative group">
+                <button
+                  className="relative text-[15px] font-medium text-slate-700 hover:text-emerald-700 px-3 py-1.5 rounded-xl hover:bg-emerald-50/70 transition-all duration-200 inline-flex items-center gap-1"
+                >
+                  Actions
+                  <svg className="w-4 h-4 group-hover:rotate-180 transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                <div className="absolute top-full left-1/2 -translate-x-1/2 pt-3 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                  <div className="min-w-[180px] rounded-2xl border border-emerald-100 bg-white/95 backdrop-blur-lg shadow-xl shadow-emerald-100/40 p-2">
+                    {actionLinks.map((item) => (
+                      <NavLink key={item.to} to={item.to} className={({ isActive }) => `block px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${isActive ? "bg-emerald-50 text-emerald-700 border border-emerald-100" : "text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-700"}`}>
+                        {item.label}
+                      </NavLink>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {links.slice(2).map((item) => (
+                <NavLink key={item.to} to={item.to} className={desktopLinkClass}>
+                  {item.label}
+                </NavLink>
+              ))}
+            </div>
+
+            <div className="flex items-center gap-2">
+              <button
+                onClick={user ? handleLogout : () => navigate("/login")}
+                className="hidden sm:inline-flex items-center rounded-full bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold px-5 py-2.5 hover:from-emerald-700 hover:to-cyan-700 hover:shadow-lg hover:shadow-emerald-200/60 transition-all duration-200"
+              >
+                {user ? "Logout" : "Login"}
+              </button>
+
+              <button
+                onClick={() => setMobileOpen((prev) => !prev)}
+                className="md:hidden inline-flex items-center justify-center w-10 h-10 rounded-xl border border-emerald-100 bg-white text-slate-700 hover:bg-emerald-50 hover:text-emerald-700 transition-all"
+                aria-label="Toggle menu"
+              >
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  {mobileOpen ? (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  ) : (
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  )}
+                </svg>
+              </button>
+            </div>
           </div>
 
-          {/* CENTER: Nav links */}
-          <div className="w-3/5 flex justify-center gap-10">
-            {links.slice(0, 2).map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `
-                  whitespace-nowrap
-                  relative text-[15px] font-medium text-slate-700
-                  px-1 py-1
-                  hover:text-emerald-700 
-                  transition-all duration-200
+          {mobileOpen && (
+            <div className="md:hidden mt-3 rounded-2xl border border-emerald-100 bg-white/95 backdrop-blur-xl shadow-xl shadow-emerald-100/40 p-3 space-y-1">
+              {links.slice(0, 2).map((item) => (
+                <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
+                  {item.label}
+                </NavLink>
+              ))}
 
-                  after:content-[''] after:absolute after:left-0 after:-bottom-1
-                  after:h-[2.5px] after:bg-gradient-to-r after:from-emerald-500 after:to-teal-500 
-                  after:w-0 after:rounded-full
-                  hover:after:w-full after:transition-all after:duration-300 after:ease-out
-
-                  ${isActive 
-                    ? "text-emerald-700 font-semibold after:w-full" 
-                    : ""
-                  }
-                `
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-
-            {/* Actions Dropdown */}
-            <div className="relative group">
               <button
-                className="
-                  whitespace-nowrap
-                  relative text-[15px] font-medium text-slate-700
-                  px-1 py-1
-                  hover:text-emerald-700 
-                  transition-all duration-200
-                  flex items-center gap-1
-
-                  after:content-[''] after:absolute after:left-0 after:-bottom-1
-                  after:h-[2.5px] after:bg-gradient-to-r after:from-emerald-500 after:to-teal-500 
-                  after:w-0 after:rounded-full
-                  group-hover:after:w-full after:transition-all after:duration-300 after:ease-out
-                "
+                type="button"
+                onClick={() => setActionsOpen((prev) => !prev)}
+                className="w-full px-4 py-2.5 rounded-xl text-sm font-medium text-slate-700 hover:bg-emerald-50/70 hover:text-emerald-700 text-left inline-flex items-center justify-between transition-all"
               >
-                Actions
-                <svg 
-                  className="w-4 h-4 transition-transform duration-200 group-hover:rotate-180" 
-                  fill="none" 
-                  stroke="currentColor" 
-                  viewBox="0 0 24 24"
-                >
+                <span>Actions</span>
+                <svg className={`w-4 h-4 transition-transform ${actionsOpen ? "rotate-180" : ""}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                 </svg>
               </button>
 
-              {/* Dropdown Menu */}
-              <div 
-                className="
-                  absolute top-full left-1/2 -translate-x-1/2 pt-3
-                  opacity-0 invisible
-                  group-hover:opacity-100 group-hover:visible
-                  transition-all duration-200
-                "
-              >
-                <div 
-                  className="
-                    bg-white/95 backdrop-blur-lg
-                    rounded-xl shadow-lg shadow-emerald-100/50
-                    border border-emerald-100
-                    py-2 min-w-[160px]
-                    overflow-hidden
-                  "
-                >
+              {actionsOpen && (
+                <div className="pl-2 space-y-1">
                   {actionLinks.map((item) => (
-                    <NavLink
-                      key={item.to}
-                      to={item.to}
-                      className={({ isActive }) =>
-                        `
-                        block px-4 py-2.5
-                        text-[14px] font-medium text-slate-700
-                        hover:bg-emerald-50 hover:text-emerald-700
-                        transition-all duration-200
-                        ${isActive ? "text-emerald-700 bg-emerald-50/50" : ""}
-                      `
-                      }
-                    >
+                    <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
                       {item.label}
                     </NavLink>
                   ))}
                 </div>
-              </div>
+              )}
+
+              {links.slice(2).map((item) => (
+                <NavLink key={item.to} to={item.to} className={mobileLinkClass}>
+                  {item.label}
+                </NavLink>
+              ))}
+
+              <button
+                onClick={user ? handleLogout : () => navigate("/login")}
+                className="w-full mt-2 inline-flex items-center justify-center rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white text-sm font-semibold px-5 py-2.5 hover:from-emerald-700 hover:to-cyan-700 transition-all"
+              >
+                {user ? "Logout" : "Login"}
+              </button>
             </div>
-
-            {links.slice(2).map((item) => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                className={({ isActive }) =>
-                  `
-                  whitespace-nowrap
-                  relative text-[15px] font-medium text-slate-700
-                  px-1 py-1
-                  hover:text-emerald-700 
-                  transition-all duration-200
-
-                  after:content-[''] after:absolute after:left-0 after:-bottom-1
-                  after:h-[2.5px] after:bg-gradient-to-r after:from-emerald-500 after:to-teal-500 
-                  after:w-0 after:rounded-full
-                  hover:after:w-full after:transition-all after:duration-300 after:ease-out
-
-                  ${isActive 
-                    ? "text-emerald-700 font-semibold after:w-full" 
-                    : ""
-                  }
-                `
-                }
-              >
-                {item.label}
-              </NavLink>
-            ))}
-          </div>
-
-          {/* RIGHT: Login / Logout button */}
-          <div className="w-1/5 flex justify-end">
-            {user ? (
-              <button
-                onClick={handleLogout}
-                className="
-                  font-semibold
-                  rounded-full 
-                  bg-gradient-to-r from-emerald-600 to-teal-600
-                  text-white text-sm 
-                  px-7 py-2.5 
-                  hover:from-emerald-700 hover:to-teal-700
-                  hover:shadow-lg hover:shadow-emerald-200/50
-                  hover:-translate-y-0.5
-                  active:translate-y-0
-                  transition-all duration-200
-                "
-              >
-                Logout
-              </button>
-            ) : (
-              <button
-                onClick={() => navigate("/login")}
-                className="
-                  font-semibold
-                  rounded-full 
-                  bg-gradient-to-r from-emerald-600 to-teal-600
-                  text-white text-sm 
-                  px-7 py-2.5 
-                  hover:from-emerald-700 hover:to-teal-700
-                  hover:shadow-lg hover:shadow-emerald-200/50
-                  hover:-translate-y-0.5
-                  active:translate-y-0
-                  transition-all duration-200
-                "
-              >
-                Login
-              </button>
-            )}
-          </div>
+          )}
         </div>
       </nav>
-      
-      {/* Spacer to prevent content from hiding behind fixed navbar */}
-      <div className="h-[180px] md:h-[160px]" />
+
+      <div className="h-[84px] sm:h-[92px]" />
     </>
   );
 }

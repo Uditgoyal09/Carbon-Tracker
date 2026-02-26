@@ -41,7 +41,7 @@ function App() {
   const shouldHideNavbar = hideNavbarRoutes.includes(location.pathname);
 
   return (
-    <>
+    <div className="ui-modern">
       {!shouldHideNavbar && <Navbar user={user} setUser={setUser} />}
       <Routes>
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
@@ -59,8 +59,8 @@ function App() {
         <Route path="/offset" element={<PrivateRoute element={<Offset />} />} />
         <Route path="/learn-more" element={<PrivateRoute element={<LearnMore />} />} />
       </Routes>
-      <ToastContainer position="top-center" autoClose={2000} />
-    </>
+      <ToastContainer position="top-right"  autoClose={2000} />
+    </div>
   );
 }
 
