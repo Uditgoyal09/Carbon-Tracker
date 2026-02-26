@@ -17,7 +17,7 @@ const app = express();
 connectDB();
 
 app.use(cors({
-  origin: "https://carbon-tracker-main.com",
+  origin: "https://carbon-tracker-main1.onrender.com",
   credentials: true
 }));
 app.use(morgan("dev"));
