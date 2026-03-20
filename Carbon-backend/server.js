@@ -17,7 +17,7 @@ const app = express();
 connectDB();
 
 const allowedOrigins = (process.env.CORS_ORIGINS ||
-  "http://localhost:5173,http://localhost:5174,https://carbon-tracker-1-xqwt.onrender.com")
+  "http://localhost:5173,http://localhost:5174,https://carbon-tracker-lovat.vercel.app/")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
