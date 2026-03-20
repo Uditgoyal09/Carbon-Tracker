@@ -55,6 +55,10 @@ exports.sendOtp = async (req, res) => {
 
     console.error("SEND OTP ERROR:", err);
 
+    if (err.code === "EMAIL_CONFIG_MISSING" || err.code === "EMAIL_AUTH_FAILED") {
+      return res.status(500).json({ message: err.message });
+    }
+
     res.status(500).json({
       message: "Error sending OTP",
       error: err.message
@@ -192,6 +196,11 @@ exports.forgotPasswordOtp = async (req, res) => {
     res.json({ message: "Password reset OTP sent to email" });
   } catch (err) {
     console.error("FORGOT PASSWORD OTP ERROR:", err);
+
+    if (err.code === "EMAIL_CONFIG_MISSING" || err.code === "EMAIL_AUTH_FAILED") {
+      return res.status(500).json({ message: err.message });
+    }
+
     res.status(500).json({ message: "Error sending password reset OTP", error: err.message });
   }
 };

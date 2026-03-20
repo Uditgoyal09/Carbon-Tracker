@@ -16,10 +16,35 @@ const offsetRoutes = require("./routes/offset.routes");
 const app = express();
 connectDB();
 
-app.use(cors({
-  origin: "https://carbon-tracker-main1.onrender.com",
-  credentials: true
-}));
+const allowedOrigins = (process.env.CORS_ORIGINS ||
+  "http://localhost:5173,http://localhost:5174,https://carbon-tracker-main1.onrender.com")
+  .split(",")
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  if (allowedOrigins.includes(origin)) return true;
+
+  // Allow local frontend dev servers on localhost/127.0.0.1, regardless of Vite port.
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+};
+
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (isAllowedOrigin(origin)) {
+      return callback(null, true);
+    }
+
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options(/.*/, cors(corsOptions));
 app.use(morgan("dev"));
 app.use(express.json());
 app.use("/uploads", express.static("uploads")); // Serve profile pictures

@@ -2,13 +2,131 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  color-scheme: light;
+  --app-bg: #eefbf8;
+  --app-surface: rgba(255, 255, 255, 0.78);
+  --app-border: rgba(255, 255, 255, 0.72);
+  --app-shadow: 0 20px 60px rgba(15, 23, 42, 0.12);
+  --app-ink: #0f172a;
+  --app-muted: #4b5563;
+  --app-primary: #059669;
+  --app-secondary: #0891b2;
+}
+
 @layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
     @apply antialiased text-slate-800;
+    margin: 0;
+    min-height: 100vh;
+    background:
+      radial-gradient(circle at top left, rgba(110, 231, 183, 0.3), transparent 32%),
+      radial-gradient(circle at top right, rgba(103, 232, 249, 0.24), transparent 26%),
+      linear-gradient(180deg, #f6fffd 0%, #eef7ff 48%, #f9fafb 100%);
+    color: var(--app-ink);
+    font-family: "Segoe UI Variable", "Aptos", "Trebuchet MS", "Segoe UI", sans-serif;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  *::selection {
+    background: rgba(16, 185, 129, 0.22);
+    color: #052e2b;
+  }
+
+  ::-webkit-scrollbar {
+    width: 11px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: rgba(226, 232, 240, 0.7);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.75), rgba(6, 182, 212, 0.75));
+    border-radius: 999px;
+    border: 2px solid rgba(255, 255, 255, 0.75);
   }
 }
 
 @layer components {
+  .app-shell__backdrop {
+    position: fixed;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .app-shell__orb {
+    position: absolute;
+    border-radius: 999px;
+    filter: blur(64px);
+    opacity: 0.55;
+    animation: shellFloat 18s ease-in-out infinite;
+  }
+
+  .app-shell__orb--one {
+    top: 6%;
+    left: -8%;
+    width: 22rem;
+    height: 22rem;
+    background: rgba(16, 185, 129, 0.2);
+  }
+
+  .app-shell__orb--two {
+    top: 18%;
+    right: -5%;
+    width: 26rem;
+    height: 26rem;
+    background: rgba(34, 211, 238, 0.18);
+    animation-delay: -6s;
+  }
+
+  .app-shell__orb--three {
+    bottom: -4rem;
+    left: 22%;
+    width: 24rem;
+    height: 24rem;
+    background: rgba(167, 243, 208, 0.22);
+    animation-delay: -12s;
+  }
+
+  .app-shell__grid {
+    position: absolute;
+    inset: 0;
+    opacity: 0.14;
+    background-image:
+      linear-gradient(rgba(15, 23, 42, 0.035) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(15, 23, 42, 0.035) 1px, transparent 1px);
+    background-size: 72px 72px;
+    mask-image: radial-gradient(circle at center, black 40%, transparent 92%);
+  }
+
+  .app-toast {
+    border: 1px solid rgba(255, 255, 255, 0.78);
+    border-radius: 1.25rem;
+    background: rgba(255, 255, 255, 0.88);
+    box-shadow: 0 18px 50px rgba(15, 23, 42, 0.16);
+    backdrop-filter: blur(18px);
+  }
+
+  .app-toast__body {
+    color: #0f172a;
+    font-size: 0.95rem;
+    line-height: 1.55;
+  }
+
+  .app-toast__progress {
+    background: linear-gradient(90deg, #10b981, #06b6d4);
+  }
+
   .ui-modern :where(button, a, input, select, textarea) {
     transition: box-shadow 220ms ease, transform 220ms ease, border-color 220ms ease, background-color 220ms ease, color 220ms ease;
   }
@@ -41,5 +159,14 @@
   .ui-modern :where(.shadow-sm, .shadow, .shadow-md, .shadow-lg, .shadow-xl, .shadow-2xl):hover {
     box-shadow: 0 16px 32px rgba(15, 23, 42, 0.14);
     transform: translateY(-2px);
+  }
+}
+
+@keyframes shellFloat {
+  0%, 100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(0, -18px, 0) scale(1.06);
   }
 }

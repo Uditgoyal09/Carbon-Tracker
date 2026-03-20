@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
+import API_BASE_URL from "../config/api";
 import {
   FaLeaf,
   FaMedal,
@@ -35,7 +36,7 @@ function Achievements() {
       try {
         setLoading(true);
         const token = localStorage.getItem("token");
-        const res = await axios.get(`${import.meta.env.VITE_API_URL}/api/achievements`, {
+        const res = await axios.get(`${API_BASE_URL}/api/achievements`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
