@@ -62,7 +62,7 @@ function Navbar({ user, setUser }) {
   ];
 
   const desktopLinkClass = ({ isActive }) =>
-    `relative text-[15px] font-medium px-3 py-1.5 rounded-2xl transition-all duration-200 ${
+    `relative text-[14px] font-medium px-3 py-1.5 rounded-2xl transition-all duration-200 whitespace-nowrap ${
       isActive
         ? "text-emerald-950 bg-white/90 border border-white/80 shadow-[0_10px_30px_rgba(8,145,178,0.15)]"
         : "text-slate-700 hover:text-emerald-900 hover:bg-white/65"
@@ -122,7 +122,7 @@ function Navbar({ user, setUser }) {
               </div>
             </button>
 
-            <div className="hidden md:flex items-center gap-5 lg:gap-6">
+            <div className="hidden md:flex items-center gap-3 lg:gap-4 xl:gap-5">
               {links.slice(0, 2).map((item) => (
                 <NavLink key={item.to} to={item.to} className={desktopLinkClass}>
                   {item.label}
@@ -156,15 +156,15 @@ function Navbar({ user, setUser }) {
               ))}
             </div>
 
-            <div className="flex items-center gap-2.5">
-              <div className="hidden xl:flex items-center gap-2 rounded-full border border-white/80 bg-white/80 px-3 py-2 text-xs text-slate-600 shadow-[0_14px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl">
+            <div className="flex items-center gap-2">
+              <div className="hidden 2xl:flex items-center gap-2 rounded-full border border-white/80 bg-white/82 px-3 py-2 text-xs font-medium text-slate-600 shadow-[0_14px_30px_rgba(15,23,42,0.08)] backdrop-blur-xl whitespace-nowrap">
                 <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500 shadow-[0_0_0_6px_rgba(16,185,129,0.12)]" />
-                Sustainable actions, ranked and visualized
+                Live sustainability insights
               </div>
 
               <button
                 onClick={user ? handleLogout : () => navigate("/login")}
-                className="hidden sm:inline-flex items-center rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-sm font-semibold px-5 py-2.5 hover:from-emerald-700 hover:to-cyan-700 hover:shadow-lg hover:shadow-emerald-200/60 transition-all duration-200"
+                className="hidden sm:inline-flex items-center rounded-full bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-600 text-white text-sm font-semibold px-4 py-2.5 hover:from-emerald-700 hover:to-cyan-700 hover:shadow-lg hover:shadow-emerald-200/60 transition-all duration-200 whitespace-nowrap"
               >
                 {user ? "Logout" : "Login"}
               </button>
