@@ -83,7 +83,6 @@ function App() {
         newestOnTop
         pauseOnFocusLoss={false}
         toastClassName={() => "app-toast"}
-        bodyClassName={() => "app-toast__body"}
         progressClassName="app-toast__progress"
       />
     </div>

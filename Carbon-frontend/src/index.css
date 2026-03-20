@@ -129,11 +129,23 @@
     right: 1rem;
   }
 
-  .app-toast__body {
+  .app-toast .Toastify__toast-body {
+    margin: 0;
+    padding: 0.45rem 0.35rem 0.45rem 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    min-width: 0;
+  }
+
+  .app-toast .Toastify__toast-body > div:last-child {
+    flex: 1;
+    min-width: 0;
     color: #0f172a;
     font-size: 0.9rem;
     line-height: 1.45;
-    padding: 0.45rem 0.35rem 0.45rem 0;
+    white-space: normal;
+    word-break: break-word;
   }
 
   .app-toast__progress {
