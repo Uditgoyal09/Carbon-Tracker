@@ -16,18 +16,22 @@ const offsetRoutes = require("./routes/offset.routes");
 const app = express();
 connectDB();
 
+const normalizeOrigin = (origin) => origin.replace(/\/$/, "");
+
 const allowedOrigins = (process.env.CORS_ORIGINS ||
-  "http://localhost:5173,http://localhost:5174,https://carbon-tracker-lovat.vercel.app/")
+  "http://localhost:5173,http://localhost:5174,http://localhost:3000,https://carbon-tracker-lovat.vercel.app")
   .split(",")
   .map((origin) => origin.trim())
+  .map((origin) => normalizeOrigin(origin))
   .filter(Boolean);
 
 const isAllowedOrigin = (origin) => {
   if (!origin) return true;
-  if (allowedOrigins.includes(origin)) return true;
+  const normalizedOrigin = normalizeOrigin(origin);
+  if (allowedOrigins.includes(normalizedOrigin)) return true;
 
   // Allow local frontend dev servers on localhost/127.0.0.1, regardless of Vite port.
-  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(origin);
+  return /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i.test(normalizedOrigin);
 };
 
 const corsOptions = {
