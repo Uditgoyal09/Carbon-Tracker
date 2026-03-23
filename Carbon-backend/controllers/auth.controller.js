@@ -16,21 +16,6 @@ const generateOtp = () => {
 
 const normalizeEmail = (email = "") => email.trim().toLowerCase();
 
-const sendOtpEmailInBackground = ({ email, subject, text, context }) => {
-  setImmediate(async () => {
-    try {
-      await sendEmail(email, subject, text);
-      console.log(`[Auth] ${context} email delivered`, { email });
-    } catch (error) {
-      console.error(`[Auth] ${context} email delivery failed`, {
-        email,
-        code: error.code,
-        message: error.message,
-      });
-    }
-  });
-};
-
 // send otp
 exports.sendOtp = async (req, res) => {
   const email= normalizeEmail(req.body?.email);
@@ -77,22 +62,57 @@ exports.sendOtp = async (req, res) => {
       await user.save();
     }
 
-    sendOtpEmailInBackground({
-      email,
-      subject: "Your Carbon Tracker OTP",
-      text: `Your OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`,
-      context: "signup OTP",
-    });
+    try {
+      await sendEmail(
+        email,
+        "Your Carbon Tracker OTP",
+        `Your OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
+      );
 
-    console.log("[Auth] OTP queued successfully", {
-      email,
-      durationMs: Date.now() - startedAt,
-    });
+      console.log("[Auth] OTP email delivered", {
+        email,
+        durationMs: Date.now() - startedAt,
+      });
 
-    return res.status(200).json({
-      message: "OTP is being sent to your email. Please check your inbox in a few seconds.",
-      success: true,
-    });
+      return res.status(200).json({
+        message: "OTP sent to email successfully",
+        success: true,
+      });
+    } catch (emailError) {
+      console.error("[Auth] Failed to send OTP email", {
+        email,
+        durationMs: Date.now() - startedAt,
+        code: emailError.code,
+        message: emailError.message,
+      });
+
+      if (emailError.code === "EMAIL_CONFIG_MISSING" || emailError.code === "EMAIL_AUTH_FAILED") {
+        return res.status(500).json({
+          message: "Email service configuration error. Please contact support.",
+          success: false,
+          errorCode: emailError.code,
+        });
+      }
+
+      if (emailError.code === "INVALID_EMAIL") {
+        return res.status(400).json({
+          message: "Invalid email address",
+          success: false,
+        });
+      }
+
+      if (emailError.code === "NETWORK_ERROR") {
+        return res.status(503).json({
+          message: "Email service temporarily unavailable. Please try again later.",
+          success: false,
+        });
+      }
+
+      return res.status(500).json({
+        message: emailError.message || "Failed to send OTP email",
+        success: false,
+      });
+    }
   } catch (err) {
     console.error("[Auth] SEND OTP ERROR", {
       email,
@@ -264,22 +284,57 @@ exports.forgotPasswordOtp = async (req, res) => {
     user.lastOtpExpiry = otpExpiry;
     await user.save();
 
-    sendOtpEmailInBackground({
-      email,
-      subject: "Carbon Tracker - Password Reset OTP",
-      text: `Your password reset OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`,
-      context: "password reset OTP",
-    });
+    try {
+      await sendEmail(
+        email,
+        "Carbon Tracker - Password Reset OTP",
+        `Your password reset OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
+      );
 
-    console.log("[Auth] Password reset OTP queued successfully", {
-      email,
-      durationMs: Date.now() - startedAt,
-    });
+      console.log("[Auth] Password reset OTP email delivered", {
+        email,
+        durationMs: Date.now() - startedAt,
+      });
 
-    return res.status(200).json({
-      message: "Password reset OTP is being sent to your email. Please check your inbox in a few seconds.",
-      success: true,
-    });
+      return res.status(200).json({
+        message: "Password reset OTP sent to email successfully",
+        success: true,
+      });
+    } catch (emailError) {
+      console.error("[Auth] Failed to send password reset OTP", {
+        email,
+        durationMs: Date.now() - startedAt,
+        code: emailError.code,
+        message: emailError.message,
+      });
+
+      if (emailError.code === "EMAIL_CONFIG_MISSING" || emailError.code === "EMAIL_AUTH_FAILED") {
+        return res.status(500).json({
+          message: "Email service configuration error. Please contact support.",
+          success: false,
+          errorCode: emailError.code,
+        });
+      }
+
+      if (emailError.code === "INVALID_EMAIL") {
+        return res.status(400).json({
+          message: "Invalid email address",
+          success: false,
+        });
+      }
+
+      if (emailError.code === "NETWORK_ERROR") {
+        return res.status(503).json({
+          message: "Email service temporarily unavailable. Please try again later.",
+          success: false,
+        });
+      }
+
+      return res.status(500).json({
+        message: emailError.message || "Failed to send password reset OTP",
+        success: false,
+      });
+    }
   } catch (err) {
     console.error("[Auth] FORGOT PASSWORD OTP ERROR", {
       email,
