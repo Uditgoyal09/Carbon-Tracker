@@ -13,7 +13,7 @@ import {
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
-import API_BASE_URL from "../config/api";
+import API_BASE_URL, { API_TIMEOUT_MS } from "../config/api";
 
 function ForgotPassword() {
   const [step, setStep] = useState("email"); // email | otp | reset | success
@@ -39,12 +39,25 @@ function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email });
+      console.log("[ForgotPassword] Sending OTP request", { email, apiBaseUrl: API_BASE_URL });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email }, {
+        timeout: API_TIMEOUT_MS,
+      });
+      console.log("[ForgotPassword] OTP request success", response.data);
       toast.success("OTP sent to your email successfully.");
       setStep("otp");
     } catch (err) {
+      console.error("[ForgotPassword] OTP request failed", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
       toast.error(
-        err.response?.data?.message || "Cannot reach OTP service. Check that the backend is running."
+        err.response?.data?.message ||
+          (err.code === "ECONNABORTED"
+            ? "OTP request timed out. Please try again."
+            : "Cannot reach OTP service. Check that the backend is running.")
       );
     } finally {
       setLoading(false);
@@ -59,10 +72,20 @@ function ForgotPassword() {
     }
     setLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/verify-forgot-otp`, { email, otp });
+      console.log("[ForgotPassword] Verifying OTP", { email, otpLength: otp.length });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/verify-forgot-otp`, { email, otp }, {
+        timeout: API_TIMEOUT_MS,
+      });
+      console.log("[ForgotPassword] OTP verification success", response.data);
       toast.success("OTP verified successfully.");
       setStep("reset");
     } catch (err) {
+      console.error("[ForgotPassword] OTP verification failed", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
       toast.error(err.response?.data?.message || "OTP verification failed");
     } finally {
       setLoading(false);
@@ -81,13 +104,23 @@ function ForgotPassword() {
     }
     setLoading(true);
     try {
-      await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
+      console.log("[ForgotPassword] Resetting password", { email });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/reset-password`, {
         email,
         newPassword,
+      }, {
+        timeout: API_TIMEOUT_MS,
       });
+      console.log("[ForgotPassword] Password reset success", response.data);
       toast.success("Password reset successful. You can now log in.");
       setStep("success");
     } catch (err) {
+      console.error("[ForgotPassword] Password reset failed", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
       toast.error(err.response?.data?.message || "Password reset failed");
     } finally {
       setLoading(false);

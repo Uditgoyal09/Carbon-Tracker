@@ -14,7 +14,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import API_BASE_URL from "../../config/api";
+import API_BASE_URL, { API_TIMEOUT_MS } from "../../config/api";
 
 function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", otp: "" });
@@ -41,15 +41,27 @@ function Register() {
     }
     try {
       setSendingOtp(true);
-      await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
+      console.log("[Register] Sending OTP request", { email: form.email, apiBaseUrl: API_BASE_URL });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
         email: form.email,
+      }, {
+        timeout: API_TIMEOUT_MS,
       });
+      console.log("[Register] OTP request success", response.data);
       setOtpSent(true);
       toast.success("OTP sent to your email! Check your inbox.", { autoClose: 2000 });
     } catch (err) {
+      console.error("[Register] OTP request failed", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
       const errorMsg =
         err.response?.data?.message ||
-        "Cannot reach OTP service. Check that the backend is running.";
+        (err.code === "ECONNABORTED"
+          ? "OTP request timed out. Please try again."
+          : "Cannot reach OTP service. Check that the backend is running.");
       toast.error(errorMsg, {
         autoClose: 3000,
       });
@@ -70,13 +82,23 @@ function Register() {
     }
     try {
       setVerifyingOtp(true);
-      await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
+      console.log("[Register] Verifying OTP", { email: form.email, otpLength: form.otp.length });
+      const response = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
         email: form.email,
         otp: form.otp,
+      }, {
+        timeout: API_TIMEOUT_MS,
       });
+      console.log("[Register] OTP verification success", response.data);
       setOtpVerified(true);
       toast.success("Email verified successfully!", { autoClose: 2000 });
     } catch (err) {
+      console.error("[Register] OTP verification failed", {
+        message: err.message,
+        code: err.code,
+        status: err.response?.status,
+        data: err.response?.data,
+      });
       const errorMsg = err.response?.data?.message || err.message || "OTP verification failed";
       toast.error(errorMsg, {
         autoClose: 3000,

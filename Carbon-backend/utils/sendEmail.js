@@ -31,9 +31,9 @@ const getTransporter = () => {
       user: emailUser,
       pass: emailPass,
     },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
+    connectionTimeout: 7000,
+    greetingTimeout: 7000,
+    socketTimeout: 9000,
   });
 
   return transporter;
@@ -73,11 +73,16 @@ const sendEmail = async (to, subject, text) => {
       replyTo: emailUser,
     };
 
-    console.log(`Sending email to: ${to}`);
+    console.log(`[Mailer] Sending email to ${to}`);
     const info = await getTransporter().sendMail(mailOptions);
-    console.log(`Email sent successfully. Message ID: ${info.messageId}`);
+    console.log(`[Mailer] Email sent successfully. Message ID: ${info.messageId}`);
     return info;
   } catch (error) {
+    console.error("[Mailer] sendMail failed", {
+      code: error.code,
+      message: error.message,
+      response: error.response,
+    });
     if (error.code === "EAUTH") {
       console.error("Authentication Error: Gmail rejected the login");
       const authError = new Error("Gmail authentication failed. Check your EMAIL_USER and EMAIL_PASS. Use an App Password, not your regular Gmail password.");
