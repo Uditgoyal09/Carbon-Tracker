@@ -8,7 +8,8 @@ const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   (isLocalHost ? "http://localhost:3000" : PROD_API_BASE_URL);
 
-export const API_TIMEOUT_MS = 30000;
+export const API_TIMEOUT_MS = 15000;
+export const OTP_TIMEOUT_MS = 0;
 export const API_WARMUP_TIMEOUT_MS = 25000;
 
 let lastWarmupAt = 0;

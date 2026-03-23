@@ -13,7 +13,7 @@ import {
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
-import API_BASE_URL, { API_TIMEOUT_MS, warmUpApi } from "../config/api";
+import API_BASE_URL, { API_TIMEOUT_MS, OTP_TIMEOUT_MS, warmUpApi } from "../config/api";
 
 function ForgotPassword() {
   const [step, setStep] = useState("email"); // email | otp | reset | success
@@ -28,6 +28,9 @@ function ForgotPassword() {
   useEffect(() => {
     warmUpApi();
   }, []);
+
+  const sendForgotOtpRequest = () =>
+    axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email }, { timeout: OTP_TIMEOUT_MS });
 
   const stepOrder = ["email", "otp", "reset", "success"];
   const currentStepIndex = stepOrder.indexOf(step);
@@ -45,9 +48,7 @@ function ForgotPassword() {
     try {
       await warmUpApi();
       console.log("[ForgotPassword] Sending OTP request", { email, apiBaseUrl: API_BASE_URL });
-      const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email }, {
-        timeout: API_TIMEOUT_MS,
-      });
+      const response = await sendForgotOtpRequest();
       console.log("[ForgotPassword] OTP request success", response.data);
       toast.success("OTP sent to your email successfully.");
       setStep("otp");
@@ -58,12 +59,31 @@ function ForgotPassword() {
         status: err.response?.status,
         data: err.response?.data,
       });
-      toast.error(
-        err.response?.data?.message ||
-          (err.code === "ECONNABORTED"
-            ? "OTP request timed out. Please try again."
-            : "Cannot reach OTP service. Check that the backend is running.")
-      );
+      if (err.code === "ECONNABORTED" || !err.response) {
+        try {
+          console.log("[ForgotPassword] Retrying OTP request after warmup");
+          await warmUpApi();
+          const retryResponse = await sendForgotOtpRequest();
+          console.log("[ForgotPassword] OTP retry success", retryResponse.data);
+          toast.success("OTP sent to your email successfully.");
+          setStep("otp");
+          return;
+        } catch (retryErr) {
+          console.error("[ForgotPassword] OTP retry failed", {
+            message: retryErr.message,
+            code: retryErr.code,
+            status: retryErr.response?.status,
+            data: retryErr.response?.data,
+          });
+          toast.error(
+            retryErr.response?.data?.message ||
+              "OTP service is still waking up. Please try again in a few seconds."
+          );
+          return;
+        }
+      }
+
+      toast.error(err.response?.data?.message || "Cannot reach OTP service. Check that the backend is running.");
     } finally {
       setLoading(false);
     }

@@ -14,7 +14,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import API_BASE_URL, { API_TIMEOUT_MS, warmUpApi } from "../../config/api";
+import API_BASE_URL, { API_TIMEOUT_MS, OTP_TIMEOUT_MS, warmUpApi } from "../../config/api";
 
 function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", otp: "" });
@@ -25,6 +25,13 @@ function Register() {
   const [registering, setRegistering] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  const sendOtpRequest = () =>
+    axios.post(
+      `${API_BASE_URL}/api/auth/send-otp`,
+      { email: form.email },
+      { timeout: OTP_TIMEOUT_MS }
+    );
 
   useEffect(() => {
     warmUpApi();
@@ -47,11 +54,7 @@ function Register() {
       setSendingOtp(true);
       await warmUpApi();
       console.log("[Register] Sending OTP request", { email: form.email, apiBaseUrl: API_BASE_URL });
-      const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
-        email: form.email,
-      }, {
-        timeout: API_TIMEOUT_MS,
-      });
+      const response = await sendOtpRequest();
       console.log("[Register] OTP request success", response.data);
       setOtpSent(true);
       toast.success("OTP sent to your email! Check your inbox.", { autoClose: 2000 });
@@ -62,11 +65,34 @@ function Register() {
         status: err.response?.status,
         data: err.response?.data,
       });
+      if (err.code === "ECONNABORTED" || !err.response) {
+        try {
+          console.log("[Register] Retrying OTP request after warmup");
+          await warmUpApi();
+          const retryResponse = await sendOtpRequest();
+          console.log("[Register] OTP retry success", retryResponse.data);
+          setOtpSent(true);
+          toast.success("OTP sent to your email! Check your inbox.", { autoClose: 2000 });
+          return;
+        } catch (retryErr) {
+          console.error("[Register] OTP retry failed", {
+            message: retryErr.message,
+            code: retryErr.code,
+            status: retryErr.response?.status,
+            data: retryErr.response?.data,
+          });
+          toast.error(
+            retryErr.response?.data?.message ||
+              "OTP service is still waking up. Please try again in a few seconds.",
+            { autoClose: 3500 }
+          );
+          return;
+        }
+      }
+
       const errorMsg =
         err.response?.data?.message ||
-        (err.code === "ECONNABORTED"
-          ? "OTP request timed out. Please try again."
-          : "Cannot reach OTP service. Check that the backend is running.");
+        "Cannot reach OTP service. Check that the backend is running.";
       toast.error(errorMsg, {
         autoClose: 3000,
       });
