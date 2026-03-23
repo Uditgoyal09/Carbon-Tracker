@@ -14,10 +14,12 @@ const generateOtp = () => {
   return Math.floor(100000 + Math.random() * 900000).toString();
 };
 
+const normalizeEmail = (email = "") => email.trim().toLowerCase();
+
 
 // send otp
 exports.sendOtp = async (req, res) => {
-  const { email } = req.body;
+  const email = normalizeEmail(req.body?.email);
   try {
     // Validate email input
     if (!email) {
@@ -112,7 +114,8 @@ exports.sendOtp = async (req, res) => {
 
 
 exports.verifyOtp = async (req, res) => {
-  const { email, otp } = req.body;
+  const email = normalizeEmail(req.body?.email);
+  const { otp } = req.body;
   try {
     const user = await User.findOne({ email }); //find user form the database
     if (!user) return res.status(400).json({ message: "User not found" });
@@ -145,8 +148,14 @@ exports.verifyOtp = async (req, res) => {
 };
 
 exports.register = async (req, res) => {
-  const { name, email, password } = req.body;
+  const name = req.body?.name?.trim();
+  const email = normalizeEmail(req.body?.email);
+  const { password } = req.body;
   try {
+    if (!name) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Please verify your email first" });
@@ -181,7 +190,8 @@ exports.register = async (req, res) => {
 
 
 exports.login = async (req, res) => {
-  const { email, password } = req.body;
+  const email = normalizeEmail(req.body?.email);
+  const { password } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: "User not found" });
@@ -189,6 +199,10 @@ exports.login = async (req, res) => {
     // Check if email is verified
     if (!user.isVerified) {
       return res.status(400).json({ message: "Please verify OTP first" });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({ message: "Please complete registration first" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -209,7 +223,7 @@ exports.login = async (req, res) => {
 
 // Forgot Password - Send OTP
 exports.forgotPasswordOtp = async (req, res) => {
-  const { email } = req.body;
+  const email = normalizeEmail(req.body?.email);
   try {
     // Validate email input
     if (!email) {
@@ -235,6 +249,13 @@ exports.forgotPasswordOtp = async (req, res) => {
       return res.status(400).json({ 
         message: "User not found",
         success: false 
+      });
+    }
+
+    if (!user.password) {
+      return res.status(400).json({
+        message: "Please complete registration first",
+        success: false
       });
     }
 
@@ -299,7 +320,8 @@ exports.forgotPasswordOtp = async (req, res) => {
 
 //  Verify Forgot Password OTP
 exports.verifyForgotOtp = async (req, res) => {
-  const { email, otp } = req.body;
+  const email = normalizeEmail(req.body?.email);
+  const { otp } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) {
@@ -323,7 +345,8 @@ exports.verifyForgotOtp = async (req, res) => {
 
 // Reset Password (after OTP verification)
 exports.resetPassword = async (req, res) => {
-  const { email, newPassword } = req.body;
+  const email = normalizeEmail(req.body?.email);
+  const { newPassword } = req.body;
   try {
     const user = await User.findOne({ email });
     if (!user) {

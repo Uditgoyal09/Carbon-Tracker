@@ -43,7 +43,9 @@ function ForgotPassword() {
       toast.success("OTP sent to your email successfully.");
       setStep("otp");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error sending OTP");
+      toast.error(
+        err.response?.data?.message || "Cannot reach OTP service. Check that the backend is running."
+      );
     } finally {
       setLoading(false);
     }

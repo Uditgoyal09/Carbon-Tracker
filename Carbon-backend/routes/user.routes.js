@@ -4,6 +4,13 @@ const verifyToken = require("../middleware/authMiddleware");
 const upload = require("../middleware/upload");
 const User = require("../models/User");
 const Activity = require("../models/Activity"); // Required for achievements
+const bcrypt = require("bcryptjs");
+
+const normalizeEmail = (email = "") => email.trim().toLowerCase();
+const validatePassword = (password) => {
+  const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]).{8,}$/;
+  return passwordRegex.test(password);
+};
 
 // GET /api/users/me - Get current user profile
 router.get("/me", verifyToken, async (req, res) => {
@@ -18,7 +25,43 @@ router.get("/me", verifyToken, async (req, res) => {
 // PUT /api/users/me - Update name/email/password
 router.put("/me", verifyToken, async (req, res) => {
   try {
-    const updated = await User.findByIdAndUpdate(req.user.id,{ $set: req.body },{ new: true }).select("-password"); //soprt
+    const updates = {};
+    const incomingName = req.body?.name?.trim();
+    const incomingEmail = req.body?.email ? normalizeEmail(req.body.email) : "";
+    const incomingPassword = req.body?.password?.trim();
+
+    if (!incomingName) {
+      return res.status(400).json({ message: "Name is required" });
+    }
+
+    if (!incomingEmail) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(incomingEmail)) {
+      return res.status(400).json({ message: "Invalid email format" });
+    }
+
+    const existingUser = await User.findOne({ email: incomingEmail, _id: { $ne: req.user.id } });
+    if (existingUser) {
+      return res.status(400).json({ message: "Email is already in use" });
+    }
+
+    updates.name = incomingName;
+    updates.email = incomingEmail;
+
+    if (incomingPassword) {
+      if (!validatePassword(incomingPassword)) {
+        return res.status(400).json({
+          message: "Password must be at least 8 characters long and contain at least 1 uppercase letter, 1 lowercase letter, and 1 special character"
+        });
+      }
+
+      updates.password = await bcrypt.hash(incomingPassword, 10);
+    }
+
+    const updated = await User.findByIdAndUpdate(req.user.id, { $set: updates }, { new: true }).select("-password");
     res.json(updated);
   } catch (err) {
     res.status(500).json({ message: "Failed to update profile" });

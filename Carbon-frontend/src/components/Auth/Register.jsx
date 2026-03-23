@@ -41,19 +41,15 @@ function Register() {
     }
     try {
       setSendingOtp(true);
-      console.log("Sending OTP to:", form.email);
-      console.log("Backend URL:", API_BASE_URL);
-      
-      const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
+      await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
         email: form.email,
       });
-      
-      console.log("Send OTP Response:", response.data);
       setOtpSent(true);
       toast.success("OTP sent to your email! Check your inbox.", { autoClose: 2000 });
     } catch (err) {
-      console.error("Send OTP Error:", err.response?.data || err.message);
-      const errorMsg = err.response?.data?.message || err.message || "Failed to send OTP";
+      const errorMsg =
+        err.response?.data?.message ||
+        "Cannot reach OTP service. Check that the backend is running.";
       toast.error(errorMsg, {
         autoClose: 3000,
       });
@@ -74,18 +70,13 @@ function Register() {
     }
     try {
       setVerifyingOtp(true);
-      console.log("Verifying OTP:", { email: form.email, otp: form.otp });
-      
-      const response = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
+      await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
         email: form.email,
         otp: form.otp,
       });
-      
-      console.log("OTP Verification Response:", response.data);
       setOtpVerified(true);
       toast.success("Email verified successfully!", { autoClose: 2000 });
     } catch (err) {
-      console.error("OTP Verification Error:", err.response?.data || err.message);
       const errorMsg = err.response?.data?.message || err.message || "OTP verification failed";
       toast.error(errorMsg, {
         autoClose: 3000,

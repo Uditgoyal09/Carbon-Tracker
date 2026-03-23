@@ -2,6 +2,7 @@ import { Routes, Route, useNavigate, Navigate, useLocation } from "react-router-
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ToastContainer } from "react-toastify";
+import axios from "axios";
 import Login from "./components/Auth/Login";
 import Register from "./components/Auth/Register";
 import VerifyOtp from "./components/Auth/VerifyOtp";
@@ -17,6 +18,7 @@ import Offset from "./pages/Offset";
 import Navbar from "./components/Navbar";
 import LearnMore from "./pages/LearnMore";
 import ForgotPassword from "./pages/ForgotPassword";
+import API_BASE_URL from "./config/api";
 
 function App() {
   const [user, setUser] = useState(null);
@@ -25,7 +27,24 @@ function App() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    if (token) setUser({ token });
+    if (!token) {
+      setUser(null);
+      return;
+    }
+
+    const restoreUser = async () => {
+      try {
+        const res = await axios.get(`${API_BASE_URL}/api/users/me`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setUser(res.data);
+      } catch (error) {
+        localStorage.removeItem("token");
+        setUser(null);
+      }
+    };
+
+    restoreUser();
   }, []);
 
   const handleLogin = (userData) => {
