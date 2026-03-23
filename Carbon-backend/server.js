@@ -53,6 +53,11 @@ app.use(morgan("dev"));
 app.use(express.json());
 app.use("/uploads", express.static("uploads")); // Serve profile pictures
 
+// Root route
+app.get("/", (req, res) => {
+  res.json({ message: "Carbon Tracker Backend is running!", status: "OK" });
+});
+
 // Routes
 app.use("/api/tips", tipRoutes);
 app.use("/api/goals", goalRoutes);
