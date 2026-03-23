@@ -1,5 +1,6 @@
 // Diagnostic test for email sending
-require("dotenv").config();
+const path = require("path");
+require("dotenv").config({ path: path.resolve(__dirname, ".env") });
 const nodemailer = require("nodemailer");
 
 const emailUser = process.env.EMAIL_USER?.trim();
@@ -17,11 +18,16 @@ if (!emailUser || !emailPass) {
 
 // Test transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: "smtp.gmail.com",
+  port: 465,
+  secure: true,
   auth: {
     user: emailUser,
     pass: emailPass
-  }
+  },
+  connectionTimeout: 15000,
+  greetingTimeout: 15000,
+  socketTimeout: 20000
 });
 
 // Verify transporter

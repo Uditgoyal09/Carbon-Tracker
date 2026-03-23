@@ -41,13 +41,20 @@ function Register() {
     }
     try {
       setSendingOtp(true);
-      await axios.post(`${API_BASE_URL}/api/auth/send-otp`, { //route
+      console.log("Sending OTP to:", form.email);
+      console.log("Backend URL:", API_BASE_URL);
+      
+      const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
         email: form.email,
       });
+      
+      console.log("Send OTP Response:", response.data);
       setOtpSent(true);
-      toast.success("OTP sent to your email!", { autoClose: 2000 });
+      toast.success("OTP sent to your email! Check your inbox.", { autoClose: 2000 });
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to send OTP", {
+      console.error("Send OTP Error:", err.response?.data || err.message);
+      const errorMsg = err.response?.data?.message || err.message || "Failed to send OTP";
+      toast.error(errorMsg, {
         autoClose: 3000,
       });
     } finally {
@@ -57,20 +64,30 @@ function Register() {
 
 
   const handleVerifyOtp = async () => {
+    if (!form.otp) {
+      toast.error("Please enter the OTP", { autoClose: 3000 });
+      return;
+    }
     if (form.otp.length !== 6) {
-      toast.error("Please enter a valid 6-digit OTP", { autoClose: 3000 });
+      toast.error("OTP must be 6 digits", { autoClose: 3000 });
       return;
     }
     try {
       setVerifyingOtp(true);
-      await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
+      console.log("Verifying OTP:", { email: form.email, otp: form.otp });
+      
+      const response = await axios.post(`${API_BASE_URL}/api/auth/verify-otp`, {
         email: form.email,
         otp: form.otp,
       });
+      
+      console.log("OTP Verification Response:", response.data);
       setOtpVerified(true);
       toast.success("Email verified successfully!", { autoClose: 2000 });
     } catch (err) {
-      toast.error(err.response?.data?.message || "OTP verification failed", {
+      console.error("OTP Verification Error:", err.response?.data || err.message);
+      const errorMsg = err.response?.data?.message || err.message || "OTP verification failed";
+      toast.error(errorMsg, {
         autoClose: 3000,
       });
     } finally {
