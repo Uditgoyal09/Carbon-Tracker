@@ -86,9 +86,13 @@ exports.sendOtp = async (req, res) => {
         message: emailError.message,
       });
 
-      if (emailError.code === "EMAIL_CONFIG_MISSING" || emailError.code === "EMAIL_AUTH_FAILED") {
+      if (
+        emailError.code === "EMAIL_CONFIG_MISSING" ||
+        emailError.code === "EMAIL_AUTH_FAILED" ||
+        emailError.code === "EMAIL_API_FAILED"
+      ) {
         return res.status(500).json({
-          message: "Email service configuration error. Please contact support.",
+          message: "Email service configuration error. Configure a working provider for OTP delivery.",
           success: false,
           errorCode: emailError.code,
         });
@@ -308,9 +312,13 @@ exports.forgotPasswordOtp = async (req, res) => {
         message: emailError.message,
       });
 
-      if (emailError.code === "EMAIL_CONFIG_MISSING" || emailError.code === "EMAIL_AUTH_FAILED") {
+      if (
+        emailError.code === "EMAIL_CONFIG_MISSING" ||
+        emailError.code === "EMAIL_AUTH_FAILED" ||
+        emailError.code === "EMAIL_API_FAILED"
+      ) {
         return res.status(500).json({
-          message: "Email service configuration error. Please contact support.",
+          message: "Email service configuration error. Configure a working provider for OTP delivery.",
           success: false,
           errorCode: emailError.code,
         });
