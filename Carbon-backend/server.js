@@ -59,6 +59,10 @@ app.get("/", (req, res) => {
   res.json({ message: "Carbon Tracker Backend is running!", status: "OK" });
 });
 
+app.get("/healthz", (req, res) => {
+  res.status(200).json({ status: "ok" });
+});
+
 // Routes
 app.use("/api/tips", tipRoutes);
 app.use("/api/goals", goalRoutes);

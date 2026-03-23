@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { motion } from "framer-motion";
@@ -14,7 +14,7 @@ import {
   FaEyeSlash,
 } from "react-icons/fa";
 import { toast } from "react-toastify";
-import API_BASE_URL, { API_TIMEOUT_MS } from "../../config/api";
+import API_BASE_URL, { API_TIMEOUT_MS, warmUpApi } from "../../config/api";
 
 function Register() {
   const [form, setForm] = useState({ name: "", email: "", password: "", otp: "" });
@@ -25,6 +25,10 @@ function Register() {
   const [registering, setRegistering] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    warmUpApi();
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -41,6 +45,7 @@ function Register() {
     }
     try {
       setSendingOtp(true);
+      await warmUpApi();
       console.log("[Register] Sending OTP request", { email: form.email, apiBaseUrl: API_BASE_URL });
       const response = await axios.post(`${API_BASE_URL}/api/auth/send-otp`, {
         email: form.email,

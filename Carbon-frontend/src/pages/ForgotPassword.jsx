@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 import { toast } from "react-toastify";
@@ -13,7 +13,7 @@ import {
   FaEye,
   FaEyeSlash,
 } from "react-icons/fa";
-import API_BASE_URL, { API_TIMEOUT_MS } from "../config/api";
+import API_BASE_URL, { API_TIMEOUT_MS, warmUpApi } from "../config/api";
 
 function ForgotPassword() {
   const [step, setStep] = useState("email"); // email | otp | reset | success
@@ -24,6 +24,10 @@ function ForgotPassword() {
   const [loading, setLoading] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
+  useEffect(() => {
+    warmUpApi();
+  }, []);
 
   const stepOrder = ["email", "otp", "reset", "success"];
   const currentStepIndex = stepOrder.indexOf(step);
@@ -39,6 +43,7 @@ function ForgotPassword() {
     e.preventDefault();
     setLoading(true);
     try {
+      await warmUpApi();
       console.log("[ForgotPassword] Sending OTP request", { email, apiBaseUrl: API_BASE_URL });
       const response = await axios.post(`${API_BASE_URL}/api/auth/forgot-password`, { email }, {
         timeout: API_TIMEOUT_MS,

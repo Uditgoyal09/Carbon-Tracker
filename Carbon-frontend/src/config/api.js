@@ -8,6 +8,38 @@ const API_BASE_URL =
   import.meta.env.VITE_API_URL ||
   (isLocalHost ? "http://localhost:3000" : PROD_API_BASE_URL);
 
-export const API_TIMEOUT_MS = 10000;
+export const API_TIMEOUT_MS = 30000;
+export const API_WARMUP_TIMEOUT_MS = 25000;
+
+let lastWarmupAt = 0;
+let warmupPromise = null;
+
+export const warmUpApi = async () => {
+  if (isLocalHost) {
+    return;
+  }
+
+  const now = Date.now();
+  if (now - lastWarmupAt < 60000) {
+    return;
+  }
+
+  if (!warmupPromise) {
+    warmupPromise = fetch(`${API_BASE_URL}/healthz`, {
+      method: "GET",
+    })
+      .then(() => {
+        lastWarmupAt = Date.now();
+      })
+      .catch((error) => {
+        console.error("[API] Warmup failed", error);
+      })
+      .finally(() => {
+        warmupPromise = null;
+      });
+  }
+
+  await warmupPromise;
+};
 
 export default API_BASE_URL;
