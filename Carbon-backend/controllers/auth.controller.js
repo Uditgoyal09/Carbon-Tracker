@@ -19,11 +19,28 @@ const generateOtp = () => {
 exports.sendOtp = async (req, res) => {
   const { email } = req.body;
   try {
+    // Validate email input
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(400).json({ 
+        message: "Email is required",
+        success: false 
+      });
     }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        message: "Invalid email format",
+        success: false 
+      });
+    }
+
+    console.log(`📧 OTP Request for: ${email}`);
+    
     const otp = generateOtp();
-    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); //10 min
+    const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     let user = await User.findOne({ email });
     if (user) {
       user.otp = otp;
@@ -44,24 +61,51 @@ exports.sendOtp = async (req, res) => {
     }
 
     // Send OTP via email
-    await sendEmail(
-      email,
-      "Your Carbon Tracker OTP",
-      `Your OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
-    );
-    res.json({ message: "OTP sent to email" });
-
-  } catch (err) {
-
-    console.error("SEND OTP ERROR:", err);
-
-    if (err.code === "EMAIL_CONFIG_MISSING" || err.code === "EMAIL_AUTH_FAILED") {
-      return res.status(500).json({ message: err.message });
+    try {
+      await sendEmail(
+        email,
+        "Your Carbon Tracker OTP",
+        `Your OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
+      );
+      console.log(`✅ OTP sent successfully to ${email}`);
+      res.status(200).json({ 
+        message: "OTP sent to email successfully",
+        success: true 
+      });
+    } catch (emailError) {
+      // If email fails, still let user know but indicate the issue
+      console.error(`❌ Failed to send OTP email to ${email}:`, emailError.message);
+      
+      // Handle specific email errors
+      if (emailError.code === "EMAIL_CONFIG_MISSING" || emailError.code === "EMAIL_AUTH_FAILED") {
+        return res.status(500).json({ 
+          message: "Email service configuration error. Please contact support.",
+          success: false,
+          errorCode: emailError.code 
+        });
+      } else if (emailError.code === "INVALID_EMAIL") {
+        return res.status(400).json({ 
+          message: "Invalid email address",
+          success: false 
+        });
+      } else if (emailError.code === "NETWORK_ERROR") {
+        return res.status(503).json({ 
+          message: "Email service temporarily unavailable. Please try again later.",
+          success: false 
+        });
+      } else {
+        return res.status(500).json({ 
+          message: emailError.message || "Failed to send OTP email",
+          success: false 
+        });
+      }
     }
-
+  } catch (err) {
+    console.error("❌ SEND OTP ERROR:", err.message);
     res.status(500).json({
-      message: "Error sending OTP",
-      error: err.message
+      message: "Error processing OTP request",
+      error: err.message,
+      success: false
     });
   }
 };
@@ -167,13 +211,31 @@ exports.login = async (req, res) => {
 exports.forgotPasswordOtp = async (req, res) => {
   const { email } = req.body;
   try {
+    // Validate email input
     if (!email) {
-      return res.status(400).json({ message: "Email is required" });
+      return res.status(400).json({ 
+        message: "Email is required",
+        success: false 
+      });
     }
+
+    // Basic email format validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      return res.status(400).json({ 
+        message: "Invalid email format",
+        success: false 
+      });
+    }
+
+    console.log(`🔐 Password Reset OTP Request for: ${email}`);
 
     const user = await User.findOne({ email });
     if (!user) {
-      return res.status(400).json({ message: "User not found" });
+      return res.status(400).json({ 
+        message: "User not found",
+        success: false 
+      });
     }
 
     // Generate OTP and set expiry (10 minutes)
@@ -187,21 +249,51 @@ exports.forgotPasswordOtp = async (req, res) => {
     await user.save();
 
     // Send OTP via email
-    await sendEmail(
-      email,
-      "Carbon Tracker - Password Reset OTP",
-      `Your password reset OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
-    );
-
-    res.json({ message: "Password reset OTP sent to email" });
-  } catch (err) {
-    console.error("FORGOT PASSWORD OTP ERROR:", err);
-
-    if (err.code === "EMAIL_CONFIG_MISSING" || err.code === "EMAIL_AUTH_FAILED") {
-      return res.status(500).json({ message: err.message });
+    try {
+      await sendEmail(
+        email,
+        "Carbon Tracker - Password Reset OTP",
+        `Your password reset OTP is: ${otp}\n\nThis OTP is valid for 10 minutes.\n\nIf you did not request this, please ignore this email.`
+      );
+      console.log(`✅ Password reset OTP sent successfully to ${email}`);
+      res.status(200).json({ 
+        message: "Password reset OTP sent to email successfully",
+        success: true 
+      });
+    } catch (emailError) {
+      console.error(`❌ Failed to send password reset OTP to ${email}:`, emailError.message);
+      
+      // Handle specific email errors
+      if (emailError.code === "EMAIL_CONFIG_MISSING" || emailError.code === "EMAIL_AUTH_FAILED") {
+        return res.status(500).json({ 
+          message: "Email service configuration error. Please contact support.",
+          success: false,
+          errorCode: emailError.code 
+        });
+      } else if (emailError.code === "INVALID_EMAIL") {
+        return res.status(400).json({ 
+          message: "Invalid email address",
+          success: false 
+        });
+      } else if (emailError.code === "NETWORK_ERROR") {
+        return res.status(503).json({ 
+          message: "Email service temporarily unavailable. Please try again later.",
+          success: false 
+        });
+      } else {
+        return res.status(500).json({ 
+          message: emailError.message || "Failed to send password reset OTP",
+          success: false 
+        });
+      }
     }
-
-    res.status(500).json({ message: "Error sending password reset OTP", error: err.message });
+  } catch (err) {
+    console.error("❌ FORGOT PASSWORD OTP ERROR:", err.message);
+    res.status(500).json({ 
+      message: "Error processing password reset request",
+      error: err.message,
+      success: false 
+    });
   }
 };
 
