@@ -19,13 +19,12 @@ const normalizeEmail = (email = "") => email.trim().toLowerCase();
 // send otp
 exports.sendOtp = async (req, res) => {
   const email= normalizeEmail(req.body?.email);
-  const name= req.body;
   const startedAt = Date.now();
 
   try {
-    if (!email || !name) {
+    if (!email) {
       return res.status(400).json({
-        message: "Email and name is required",
+        message: "Email is required",
         success: false,
       });
     }
@@ -175,6 +174,14 @@ exports.register = async (req, res) => {
       return res.status(400).json({ message: "Name is required" });
     }
 
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "Please verify your email first" });
@@ -210,6 +217,18 @@ exports.login = async (req, res) => {
   const { password } = req.body;
 
   try {
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!password) {
+      return res.status(400).json({ message: "Password is required" });
+    }
+
+    if (!process.env.JWT_SECRET) {
+      return res.status(500).json({ message: "JWT_SECRET is missing on the server" });
+    }
+
     const user = await User.findOne({ email });
     if (!user) {
       return res.status(400).json({ message: "User not found" });
